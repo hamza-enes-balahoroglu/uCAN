@@ -1,0 +1,13 @@
+# C/C++ kaynak dosyaları hep LF olsun
+*.c text eol=lf
+*.h text eol=lf
+
+# Assembly ve linker script dosyaları da LF
+*.s text eol=lf
+*.ld text eol=lf
+
+# Markdown ve diğer düz metin dosyaları da LF
+*.md text eol=lf
+
+# Genel ayar: her şeyi otomatik çöz
+* text=auto
