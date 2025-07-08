@@ -33,6 +33,7 @@
 .cproject
 .project
 .settings/
+/Debug/
 
 # Vagrant directory
 .vagrant/
