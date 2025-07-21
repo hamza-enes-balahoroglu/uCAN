@@ -1,6 +1,8 @@
 #ifndef YCAN_TYPES
 #define YCAN_TYPES
 
+#include "stm32f4xx_hal.h"
+
 typedef enum {
     YCAN_U8,
     YCAN_U16,
