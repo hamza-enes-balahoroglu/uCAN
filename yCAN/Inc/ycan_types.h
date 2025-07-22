@@ -19,7 +19,18 @@ typedef struct {
     uint8_t dlc;
     uint8_t item_count;
     ycan_data_t items[8];
+} ycan_packet_init_t;
+
+typedef struct {
+    uint32_t id;
+    uint8_t dlc;
+    uint8_t* bits[8];
 } ycan_packet_t;
+
+typedef struct {
+	uint32_t count;
+	ycan_packet_t* packets;
+} ycan_packet_holder_t;
 
 typedef enum
 {
