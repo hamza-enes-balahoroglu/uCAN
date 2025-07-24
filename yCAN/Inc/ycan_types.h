@@ -7,30 +7,40 @@ typedef enum {
     YCAN_U8,
     YCAN_U16,
     YCAN_U32
-} ycan_data_type_t;
+} YCAN_Dataype_t;
 
 typedef struct {
     void* ptr;
-    ycan_data_type_t type;
-} ycan_data_t;
+    YCAN_Dataype_t type;
+} YCAN_Data;
 
 typedef struct {
     uint32_t id;
     uint8_t dlc;
     uint8_t item_count;
-    ycan_data_t items[8];
-} ycan_packet_init_t;
+    YCAN_Data items[8];
+} YCAN_Packet_Init;
 
 typedef struct {
     uint32_t id;
     uint8_t dlc;
     uint8_t* bits[8];
-} ycan_packet_t;
+} YCAN_Packet;
 
 typedef struct {
 	uint32_t count;
-	ycan_packet_t* packets;
-} ycan_packet_holder_t;
+	YCAN_Packet* packets;
+} YCAN_Packet_Holder;
+
+
+
+typedef struct {
+	CAN_HandleTypeDef* hcan;
+	YCAN_Packet_Init* txPacketList;
+	uint32_t txPacketCount;
+	YCAN_Packet_Init* rxPacketList;
+	uint32_t rxPacketCount;
+} YCAN_InitTypeDef;
 
 typedef enum
 {

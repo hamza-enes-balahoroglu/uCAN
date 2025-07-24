@@ -40,10 +40,11 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+CAN_HandleTypeDef hcan1;
 
 /* USER CODE BEGIN PV */
-extern ycan_packet_holder_t _txMessage;
-ycan_packet_t* deneme;
+extern YCAN_Packet_Holder _txMessage;
+YCAN_Packet* deneme;
 
 uint8_t byte1;
 uint8_t byte1_2;
@@ -54,52 +55,15 @@ uint16_t byte2_3;
 uint32_t byte4_3 = 0;
 
 
-ycan_packet_init_t txInitPacketList[2]={
-		{.id=0x240, .item_count= 4,
-				.items = {
-						{.type = YCAN_U8 , .ptr = &byte1},
-						{.type = YCAN_U16, .ptr = &byte2},
 
-						{.type = YCAN_U32, .ptr = &byte4},
-						{.type = YCAN_U8,  .ptr = &byte1_2},
-				}
-		},
-		{.id=0x250, .item_count= 2,
-				.items = {
-						{.type = YCAN_U8 , .ptr = &byte1_3},
-						//{.type = YCAN_U16, .ptr = &byte2},
-
-						{.type = YCAN_U32, .ptr = &byte4_3},
-						//{.type = YCAN_U8,  .ptr = &byte1_2},
-				}
-		},
-};
-ycan_packet_init_t rxInitPacketList[2] = {
-		{.id=0x240, .item_count= 3,
-				.items = {
-						{.type = YCAN_U8 , .ptr = &byte1_2},
-						//{.type = YCAN_U16, .ptr = &byte2},
-
-						{.type = YCAN_U32, .ptr = &byte4_3},
-				}
-		},
-		{.id=0x250, .item_count= 2,
-				.items = {
-						{.type = YCAN_U32 , .ptr = &byte4},
-						//{.type = YCAN_U16, .ptr = &byte2},
-
-						{.type = YCAN_U32, .ptr = &byte4_3},
-						//{.type = YCAN_U8,  .ptr = &byte1_2},
-				}
-		},
-};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_CAN1_Init(void);
 /* USER CODE BEGIN PFP */
-
+static void yCAN_Configure(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -125,21 +89,22 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
-  YCAN_INIT_AUTO(txInitPacketList, rxInitPacketList);
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  deneme = &_txMessage.packets[1];
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
+  yCAN_Configure();
 
+  deneme = &_txMessage.packets[1];
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -202,6 +167,42 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief CAN1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_CAN1_Init(void)
+{
+
+  /* USER CODE BEGIN CAN1_Init 0 */
+
+  /* USER CODE END CAN1_Init 0 */
+
+  /* USER CODE BEGIN CAN1_Init 1 */
+
+  /* USER CODE END CAN1_Init 1 */
+  hcan1.Instance = CAN1;
+  hcan1.Init.Prescaler = 21;
+  hcan1.Init.Mode = CAN_MODE_NORMAL;
+  hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
+  hcan1.Init.TimeSeg1 = CAN_BS1_13TQ;
+  hcan1.Init.TimeSeg2 = CAN_BS2_2TQ;
+  hcan1.Init.TimeTriggeredMode = DISABLE;
+  hcan1.Init.AutoBusOff = DISABLE;
+  hcan1.Init.AutoWakeUp = DISABLE;
+  hcan1.Init.AutoRetransmission = DISABLE;
+  hcan1.Init.ReceiveFifoLocked = DISABLE;
+  hcan1.Init.TransmitFifoPriority = DISABLE;
+  if (HAL_CAN_Init(&hcan1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CAN1_Init 2 */
+
+  /* USER CODE END CAN1_Init 2 */
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -214,6 +215,7 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
@@ -221,7 +223,53 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void yCAN_Configure(void)
+{
+	YCAN_Packet_Init txInitPacketList[2]={
+			{.id=0x240, .item_count= 4,
+					.items = {
+							{.type = YCAN_U8 , .ptr = &byte1},
+							{.type = YCAN_U16, .ptr = &byte2},
 
+							{.type = YCAN_U32, .ptr = &byte4},
+							{.type = YCAN_U8,  .ptr = &byte1_2},
+					}
+			},
+			{.id=0x250, .item_count= 2,
+					.items = {
+							{.type = YCAN_U8 , .ptr = &byte1_3},
+							//{.type = YCAN_U16, .ptr = &byte2},
+
+							{.type = YCAN_U32, .ptr = &byte4_3},
+							//{.type = YCAN_U8,  .ptr = &byte1_2},
+					}
+			},
+	};
+	YCAN_Packet_Init rxInitPacketList[2] = {
+			{.id=0x240, .item_count= 3,
+					.items = {
+							{.type = YCAN_U8 , .ptr = &byte1_2},
+							//{.type = YCAN_U16, .ptr = &byte2},
+
+							{.type = YCAN_U32, .ptr = &byte4_3},
+					}
+			},
+			{.id=0x250, .item_count= 2,
+					.items = {
+							{.type = YCAN_U32 , .ptr = &byte4},
+							//{.type = YCAN_U16, .ptr = &byte2},
+
+							{.type = YCAN_U32, .ptr = &byte4_3},
+							//{.type = YCAN_U8,  .ptr = &byte1_2},
+					}
+			},
+	};
+
+	if (YCAN_INIT_AUTO(txInitPacketList, rxInitPacketList) != YCAN_OK)
+	{
+		Error_Handler();
+	}
+}
 /* USER CODE END 4 */
 
 /**

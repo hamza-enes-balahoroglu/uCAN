@@ -1,14 +1,14 @@
 #include "ycan.h"
 #include <stdlib.h>
 
-ycan_packet_holder_t _txMessage;
+YCAN_Packet_Holder _txMessage;
 
-ycan_packet_holder_t _rxMessage;
+YCAN_Packet_Holder _rxMessage;
 
 
 YCAN_StatusTypeDef isInitOk = YCAN_NOT_INITIALIZED;
 
-static uint8_t Calculate_DLC(ycan_packet_init_t* pkt) {
+static uint8_t Calculate_DLC(YCAN_Packet_Init* pkt) {
     uint8_t dlc = 0;
     for (int i=0; i < pkt->item_count; i++) {
         switch(pkt->items[i].type) {
@@ -28,14 +28,14 @@ static uint8_t Calculate_DLC(ycan_packet_init_t* pkt) {
     return dlc;
 }
 
-static YCAN_StatusTypeDef yCAN_Check_Init_Values(ycan_packet_init_t *packetList, uint32_t packetCount)
+static YCAN_StatusTypeDef yCAN_Check_Init_Values(YCAN_Packet_Init *packetList, uint32_t packetCount)
 {
     if (packetList == NULL || packetCount == 0 || packetCount > YCAN_MAX_PACKET_COUNT) {
         return YCAN_INVALID_PARAM;
     }
 
 	for(int i=0; i < packetCount; i++){
-		ycan_packet_init_t *pkt = &packetList[i];
+		YCAN_Packet_Init *pkt = &packetList[i];
 
 		if(pkt == NULL)
 		{
@@ -52,9 +52,9 @@ static YCAN_StatusTypeDef yCAN_Check_Init_Values(ycan_packet_init_t *packetList,
 }
 
 
-static ycan_packet_t* yCAN_Finalize_Packet(ycan_packet_init_t* init_pkt, uint32_t count)
+static YCAN_Packet* yCAN_Finalize_Packet(YCAN_Packet_Init* init_pkt, uint32_t count)
 {
-	ycan_packet_t* packets = malloc(count * sizeof(ycan_packet_t));
+	YCAN_Packet* packets = malloc(count * sizeof(YCAN_Packet));
 	if (!packets) return NULL;
 
 	for (uint32_t i = 0; i < count; ++i) {
@@ -99,8 +99,8 @@ static ycan_packet_t* yCAN_Finalize_Packet(ycan_packet_init_t* init_pkt, uint32_
 }
 
 
-YCAN_StatusTypeDef yCAN_Init(ycan_packet_init_t* txInitPacketList, uint32_t txPacketCount,
-		ycan_packet_init_t* rxInitPacketList, uint32_t rxPacketCount)
+YCAN_StatusTypeDef yCAN_Init(YCAN_Packet_Init* txInitPacketList, uint32_t txPacketCount,
+		YCAN_Packet_Init* rxInitPacketList, uint32_t rxPacketCount)
 {
 	YCAN_StatusTypeDef txListCheck = yCAN_Check_Init_Values(txInitPacketList, txPacketCount);
 	YCAN_StatusTypeDef rxListCheck = yCAN_Check_Init_Values(rxInitPacketList, rxPacketCount);
@@ -121,8 +121,8 @@ YCAN_StatusTypeDef yCAN_Init(ycan_packet_init_t* txInitPacketList, uint32_t txPa
 	_rxMessage.packets = yCAN_Finalize_Packet(rxInitPacketList, rxPacketCount);
 	_rxMessage.count = rxPacketCount;
 
-//	free(&txInitPacketList);
-//	free(&rxInitPacketList);
+	txInitPacketList[0] = (YCAN_Packet_Init){0};
+	rxInitPacketList[0] = (YCAN_Packet_Init){0};
 
 	isInitOk = YCAN_OK;
 	return YCAN_OK;
@@ -147,4 +147,8 @@ YCAN_StatusTypeDef yCAN_Update(void)
 	}
 
 	return YCAN_OK;
+}
+YCAN_StatusTypeDef yCAN_Handshake(void)
+{
+
 }
