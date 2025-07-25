@@ -10,10 +10,10 @@ typedef enum {
 } UCAN_DataType;
 
 typedef enum {
-	UCAN_HANDSHAKE_MASTER,
-	UCAN_HANDSHAKE_LISTENER,
-	UCAN_HANDSHAKE_NONE
-} UCAN_HandshakeType;
+	UCAN_ROLE_MASTER,
+	UCAN_ROLE_CLIENT,
+	UCAN_ROLE_NONE
+} UCAN_NodeRole;
 
 typedef struct {
     void* ptr;
@@ -37,15 +37,28 @@ typedef struct {
 	UCAN_Packet* packets;
 } UCAN_PacketHolder;
 
+typedef struct {
+	UCAN_NodeRole role;
+    uint32_t selfId;
+    uint32_t masterId;
+    uint32_t* clientIdList;
+    uint32_t clientCount;
+} UCAN_NodeInfo;
+
 
 typedef struct {
-	CAN_HandleTypeDef* hcan;
-	UCAN_HandshakeType handshakeType;
-	UCAN_PacketInit* txPacketList;
-	uint32_t txPacketCount;
-	UCAN_PacketInit* rxPacketList;
-	uint32_t rxPacketCount;
-} UCAN_InitTypeDef;
+	UCAN_PacketConfig* txPacketList;
+	UCAN_PacketConfig* rxPacketList;
+} UCAN_Config;
+
+typedef struct {
+    CAN_HandleTypeDef *hcan;
+    UCAN_NodeInfo node;
+    uint32_t txPacketCount;
+    uint32_t rxPacketCount;
+    UCAN_Packet* txPackets;
+    UCAN_Packet* rxPackets;
+} YCAN_HandleTypeDef;
 
 typedef enum {
   UCAN_OK              = 0x00U, // Sorun yok veri gitti

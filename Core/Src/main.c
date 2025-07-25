@@ -193,7 +193,7 @@ static void MX_CAN1_Init(void)
   hcan1.Init.AutoRetransmission = DISABLE;
   hcan1.Init.ReceiveFifoLocked = DISABLE;
   hcan1.Init.TransmitFifoPriority = DISABLE;
-  if (HAL_CAN_Init(&hcan1) != HAL_OK)
+  if (HAL_CANz_Init(&hcan1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -226,6 +226,9 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 static void yCAN_Configure(void)
 {
+	UCAN_InitTypeDef UCAN_InitStruct;
+	UCAN_NodeInfo node;
+
 	UCAN_PacketInit txInitPacketList[2]={
 			{.id=0x240, .item_count= 4,
 					.items = {
@@ -267,7 +270,22 @@ static void yCAN_Configure(void)
 			},
 	};
 
-	if (UCAN_INIT_AUTO(txInitPacketList, rxInitPacketList) != UCAN_OK)
+	uint32_t clients[3] = {0x100, 0x200, 0x300};
+
+	node.masterId = 0x000;
+	node.selfId = 0x000;
+	node.role = UCAN_ROLE_MASTER;
+	node.clientIdList = clients;
+	node.clientCount = UCAN_CLIENT_COUNT(clients);
+
+	UCAN_InitStruct.hcan = &hcan1;
+	UCAN_InitStruct.node = node;
+	UCAN_InitStruct.txPacketList  = txInitPacketList;
+	UCAN_InitStruct.txPacketCount = UCAN_PACKET_COUNT(txInitPacketList);
+	UCAN_InitStruct.rxPacketList  = rxInitPacketList;
+	UCAN_InitStruct.rxPacketCount = UCAN_PACKET_COUNT(rxInitPacketList);
+
+	if (uCAN_Init(UCAN_InitStruct) != UCAN_OK)
 	{
 		Error_Handler();
 	}

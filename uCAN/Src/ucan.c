@@ -10,15 +10,14 @@ UCAN_PacketHolder _rxMessage;
 UCAN_StatusTypeDef isInitOk = UCAN_NOT_INITIALIZED;
 
 static uint8_t Calculate_DLC(UCAN_PacketInit* pkt);
-static UCAN_StatusTypeDef uCAN_Check_Init_Values(UCAN_PacketInit *packetList, uint32_t packetCount);
+static UCAN_StatusTypeDef uCAN_CheckPacketInit(UCAN_PacketInit *packetList, uint32_t packetCount);
 static UCAN_Packet* uCAN_Finalize_Packet(UCAN_PacketInit* init_pkt, uint32_t count);
 
 
-UCAN_StatusTypeDef uCAN_Init(UCAN_PacketInit* txInitPacketList, uint32_t txPacketCount,
-		UCAN_PacketInit* rxInitPacketList, uint32_t rxPacketCount)
+UCAN_StatusTypeDef uCAN_Init(UCAN_InitTypeDef UCAN_InitStruct)
 {
-	UCAN_StatusTypeDef txListCheck = uCAN_Check_Init_Values(txInitPacketList, txPacketCount);
-	UCAN_StatusTypeDef rxListCheck = uCAN_Check_Init_Values(rxInitPacketList, rxPacketCount);
+	UCAN_StatusTypeDef txListCheck = uCAN_CheckPacketInit(UCAN_InitStruct.txPacketList, UCAN_InitStruct.txPacketCount);
+	UCAN_StatusTypeDef rxListCheck = uCAN_CheckPacketInit(UCAN_InitStruct.rxPacketList, UCAN_InitStruct.rxPacketCount);
 
 	if (txListCheck != UCAN_OK)
 	{
@@ -28,18 +27,15 @@ UCAN_StatusTypeDef uCAN_Init(UCAN_PacketInit* txInitPacketList, uint32_t txPacke
 
 	if (rxListCheck != UCAN_OK)
 	{
-		isInitOk = txListCheck;
+		isInitOk = rxListCheck;
 		return rxListCheck;
 	}
 
-	_txMessage.packets = uCAN_Finalize_Packet(txInitPacketList, txPacketCount);
-	_txMessage.count = txPacketCount;
+	_txMessage.packets = uCAN_Finalize_Packet(UCAN_InitStruct.txPacketList, UCAN_InitStruct.txPacketCount);
+	_txMessage.count = UCAN_InitStruct.txPacketCount;
 
-	_rxMessage.packets = uCAN_Finalize_Packet(rxInitPacketList, rxPacketCount);
-	_rxMessage.count = rxPacketCount;
-
-	txInitPacketList[0] = (UCAN_PacketInit){0};
-	rxInitPacketList[0] = (UCAN_PacketInit){0};
+	_rxMessage.packets = uCAN_Finalize_Packet(UCAN_InitStruct.rxPacketList, UCAN_InitStruct.rxPacketCount);
+	_rxMessage.count = UCAN_InitStruct.rxPacketCount;
 
 	isInitOk = UCAN_OK;
 	return UCAN_OK;
@@ -97,7 +93,7 @@ static uint8_t Calculate_DLC(UCAN_PacketInit* pkt)
     return dlc;
 }
 
-static UCAN_StatusTypeDef uCAN_Check_Init_Values(UCAN_PacketInit *packetList, uint32_t packetCount)
+static UCAN_StatusTypeDef uCAN_CheckPacketInit(UCAN_PacketInit *packetList, uint32_t packetCount)
 {
     if (packetList == NULL || packetCount == 0 || packetCount > UCAN_MAX_PACKET_COUNT) {
         return UCAN_INVALID_PARAM;
@@ -121,7 +117,7 @@ static UCAN_StatusTypeDef uCAN_Check_Init_Values(UCAN_PacketInit *packetList, ui
 }
 
 
-static UCAN_Packet* uCAN_Finalize_Packet(UCAN_PacketInit* init_pkt, uint32_t count)
+static UCAN_Packet* uCAN_Finalize_Packet(UCAN_PacketInit* initPackets, UCAN_Packet* finalPackets, uint32_t count)
 {
 	UCAN_Packet* packets = malloc(count * sizeof(UCAN_Packet));
 	if (!packets) return NULL;

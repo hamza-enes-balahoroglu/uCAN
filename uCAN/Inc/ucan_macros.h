@@ -5,7 +5,6 @@
 
 #define UCAN_PACKET_COUNT(list) (sizeof(list) / sizeof((list)[0]))
 
-#define UCAN_INIT_AUTO(txList, rxList) \
-    uCAN_Init(txList, UCAN_PACKET_COUNT(txList), rxList, UCAN_PACKET_COUNT(rxList))
+#define UCAN_CLIENT_COUNT(client) (sizeof(client) / sizeof((client)[0]))
 
 #endif
