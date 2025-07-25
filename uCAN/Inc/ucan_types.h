@@ -16,16 +16,23 @@ typedef enum {
 } UCAN_NodeRole;
 
 typedef enum {
-	UCAN_NOT_INITIALIZED = 0x00U, // uCAN modülü init edilmedi
-	UCAN_OK              = 0x01U, // Sorun yok veri gitti
-	UCAN_ERROR           = 0x02U, // veri gönderilemedi genel hata
-	UCAN_MISSING_VAL     = 0x03U, // veri yanlış ya da yazılan uzunluk uyumsuz
-	UCAN_NO_CONNECTION   = 0x04U, // can hattı kopunca döner
-	UCAN_NO_CHANGED_VAL  = 0x05U, // değişen değer yoksa göndermez
-	UCAN_TIMEOUT         = 0x06U, // işlem zaman aşımına uğradı
-	UCAN_INVALID_PARAM   = 0x07U, // fonksiyona hatalı parametre gönderildi
-	UCAN_BUSY            = 0x08U, // can hattı meşgul, şu anda işleme alınamaz
+	UCAN_NOT_INITIALIZED	= 0x00U, // uCAN modülü init edilmedi
+	UCAN_OK             	= 0x01U, // Sorun yok veri gitti
+	UCAN_ERROR          	= 0x02U, // veri gönderilemedi genel hata
+	UCAN_MISSING_VAL    	= 0x03U, // veri yanlış ya da yazılan uzunluk uyumsuz
+	UCAN_NO_CONNECTION  	= 0x04U, // can hattı kopunca döner
+	UCAN_NO_CHANGED_VAL 	= 0x05U, // değişen değer yoksa göndermez
+	UCAN_TIMEOUT        	= 0x06U, // işlem zaman aşımına uğradı
+	UCAN_INVALID_PARAM  	= 0x07U, // fonksiyona hatalı parametre gönderildi
+	UCAN_BUSY           	= 0x08U, // can hattı meşgul, şu anda işleme alınamaz
 } UCAN_StatusTypeDef;
+
+typedef enum {
+    UCAN_CONN_ACTIVE		= 0x00U, // bağlantı canlı, iletişimde
+    UCAN_CONN_LOST			= 0x01U, // daha önce bağlıydı ama koptu
+    UCAN_CONN_WAITING		= 0x02U, // cevap bekleniyor (örneğin handshake sonrası)
+    UCAN_CONN_TIMEOUT		= 0x03U, // belirli sürede dönüş olmadı
+} UCAN_ConnectionStatusTypeDef;
 
 typedef struct {
     void* ptr;
@@ -55,6 +62,7 @@ typedef struct {
     uint32_t masterId;
     uint32_t* clientIdList;
     uint32_t clientCount;
+    UCAN_ConnectionStatusTypeDef* clientConnectionStatus;
 } UCAN_NodeInfo;
 
 
