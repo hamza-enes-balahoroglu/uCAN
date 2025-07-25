@@ -6,8 +6,8 @@
 #include "ucan_types.h"
 
 
-UCAN_StatusTypeDef uCAN_Init(UCAN_Packet_Init* txPacketList, uint32_t txPacketCount,
-		UCAN_Packet_Init* rxPacketList, uint32_t rxPacketCount);
+UCAN_StatusTypeDef uCAN_Init(UCAN_PacketInit* txPacketList, uint32_t txPacketCount,
+		UCAN_PacketInit* rxPacketList, uint32_t rxPacketCount);
 
 UCAN_StatusTypeDef uCAN_SendAll(void);
 

@@ -2,14 +2,82 @@
 
 #include "ucan.h"
 
-UCAN_Packet_Holder _txMessage;
+UCAN_PacketHolder _txMessage;
 
-UCAN_Packet_Holder _rxMessage;
+UCAN_PacketHolder _rxMessage;
 
 
 UCAN_StatusTypeDef isInitOk = UCAN_NOT_INITIALIZED;
 
-static uint8_t Calculate_DLC(UCAN_Packet_Init* pkt) {
+static uint8_t Calculate_DLC(UCAN_PacketInit* pkt);
+static UCAN_StatusTypeDef uCAN_Check_Init_Values(UCAN_PacketInit *packetList, uint32_t packetCount);
+static UCAN_Packet* uCAN_Finalize_Packet(UCAN_PacketInit* init_pkt, uint32_t count);
+
+
+UCAN_StatusTypeDef uCAN_Init(UCAN_PacketInit* txInitPacketList, uint32_t txPacketCount,
+		UCAN_PacketInit* rxInitPacketList, uint32_t rxPacketCount)
+{
+	UCAN_StatusTypeDef txListCheck = uCAN_Check_Init_Values(txInitPacketList, txPacketCount);
+	UCAN_StatusTypeDef rxListCheck = uCAN_Check_Init_Values(rxInitPacketList, rxPacketCount);
+
+	if (txListCheck != UCAN_OK)
+	{
+		isInitOk = txListCheck;
+		return txListCheck;
+	}
+
+	if (rxListCheck != UCAN_OK)
+	{
+		isInitOk = txListCheck;
+		return rxListCheck;
+	}
+
+	_txMessage.packets = uCAN_Finalize_Packet(txInitPacketList, txPacketCount);
+	_txMessage.count = txPacketCount;
+
+	_rxMessage.packets = uCAN_Finalize_Packet(rxInitPacketList, rxPacketCount);
+	_rxMessage.count = rxPacketCount;
+
+	txInitPacketList[0] = (UCAN_PacketInit){0};
+	rxInitPacketList[0] = (UCAN_PacketInit){0};
+
+	isInitOk = UCAN_OK;
+	return UCAN_OK;
+}
+
+UCAN_StatusTypeDef uCAN_SendAll(void)
+{
+	if(isInitOk != UCAN_OK)
+	{
+		return isInitOk;
+	}
+
+
+	return UCAN_OK;
+}
+
+UCAN_StatusTypeDef uCAN_Update(void)
+{
+	if(isInitOk != UCAN_OK)
+	{
+		return isInitOk;
+	}
+
+	return UCAN_OK;
+}
+
+UCAN_StatusTypeDef uCAN_Handshake(void)
+{
+	if(isInitOk != UCAN_OK)
+	{
+		return isInitOk;
+	}
+
+	return UCAN_OK;
+}
+
+static uint8_t Calculate_DLC(UCAN_PacketInit* pkt)
+{
     uint8_t dlc = 0;
     for (int i=0; i < pkt->item_count; i++) {
         switch(pkt->items[i].type) {
@@ -29,14 +97,14 @@ static uint8_t Calculate_DLC(UCAN_Packet_Init* pkt) {
     return dlc;
 }
 
-static UCAN_StatusTypeDef uCAN_Check_Init_Values(UCAN_Packet_Init *packetList, uint32_t packetCount)
+static UCAN_StatusTypeDef uCAN_Check_Init_Values(UCAN_PacketInit *packetList, uint32_t packetCount)
 {
     if (packetList == NULL || packetCount == 0 || packetCount > UCAN_MAX_PACKET_COUNT) {
         return UCAN_INVALID_PARAM;
     }
 
 	for(int i=0; i < packetCount; i++){
-		UCAN_Packet_Init *pkt = &packetList[i];
+		UCAN_PacketInit *pkt = &packetList[i];
 
 		if(pkt == NULL)
 		{
@@ -53,7 +121,7 @@ static UCAN_StatusTypeDef uCAN_Check_Init_Values(UCAN_Packet_Init *packetList, u
 }
 
 
-static UCAN_Packet* uCAN_Finalize_Packet(UCAN_Packet_Init* init_pkt, uint32_t count)
+static UCAN_Packet* uCAN_Finalize_Packet(UCAN_PacketInit* init_pkt, uint32_t count)
 {
 	UCAN_Packet* packets = malloc(count * sizeof(UCAN_Packet));
 	if (!packets) return NULL;
@@ -97,64 +165,4 @@ static UCAN_Packet* uCAN_Finalize_Packet(UCAN_Packet_Init* init_pkt, uint32_t co
 
 	return packets;
 
-}
-
-
-UCAN_StatusTypeDef uCAN_Init(UCAN_Packet_Init* txInitPacketList, uint32_t txPacketCount,
-		UCAN_Packet_Init* rxInitPacketList, uint32_t rxPacketCount)
-{
-	UCAN_StatusTypeDef txListCheck = uCAN_Check_Init_Values(txInitPacketList, txPacketCount);
-	UCAN_StatusTypeDef rxListCheck = uCAN_Check_Init_Values(rxInitPacketList, rxPacketCount);
-
-	if (txListCheck != UCAN_OK)
-	{
-		return txListCheck;
-	}
-
-	if (rxListCheck != UCAN_OK)
-	{
-		return rxListCheck;
-	}
-
-	_txMessage.packets = uCAN_Finalize_Packet(txInitPacketList, txPacketCount);
-	_txMessage.count = txPacketCount;
-
-	_rxMessage.packets = uCAN_Finalize_Packet(rxInitPacketList, rxPacketCount);
-	_rxMessage.count = rxPacketCount;
-
-	txInitPacketList[0] = (UCAN_Packet_Init){0};
-	rxInitPacketList[0] = (UCAN_Packet_Init){0};
-
-	isInitOk = UCAN_OK;
-	return UCAN_OK;
-}
-
-UCAN_StatusTypeDef uCAN_SendAll(void)
-{
-	if(isInitOk == UCAN_NOT_INITIALIZED)
-	{
-		return UCAN_NOT_INITIALIZED;
-	}
-
-
-	return UCAN_OK;
-}
-
-UCAN_StatusTypeDef uCAN_Update(void)
-{
-	if(isInitOk == UCAN_NOT_INITIALIZED)
-	{
-		return UCAN_NOT_INITIALIZED;
-	}
-
-	return UCAN_OK;
-}
-UCAN_StatusTypeDef uCAN_Handshake(void)
-{
-	if(isInitOk == UCAN_NOT_INITIALIZED)
-	{
-		return UCAN_NOT_INITIALIZED;
-	}
-
-	return UCAN_OK;
 }

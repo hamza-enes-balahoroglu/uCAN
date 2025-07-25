@@ -7,25 +7,24 @@ typedef enum {
     UCAN_U8,
     UCAN_U16,
     UCAN_U32
-} UCAN_Data_Type;
+} UCAN_DataType;
 
 typedef enum {
 	UCAN_HANDSHAKE_MASTER,
 	UCAN_HANDSHAKE_LISTENER,
 	UCAN_HANDSHAKE_NONE
-} UCAN_Handshake_Type;
+} UCAN_HandshakeType;
 
 typedef struct {
     void* ptr;
-    UCAN_Data_Type type;
+    UCAN_DataType type;
 } UCAN_Data;
 
 typedef struct {
     uint32_t id;
-    uint8_t dlc;
     uint8_t item_count;
     UCAN_Data items[8];
-} UCAN_Packet_Init;
+} UCAN_PacketInit;
 
 typedef struct {
     uint32_t id;
@@ -36,15 +35,15 @@ typedef struct {
 typedef struct {
 	uint32_t count;
 	UCAN_Packet* packets;
-} UCAN_Packet_Holder;
+} UCAN_PacketHolder;
 
 
 typedef struct {
 	CAN_HandleTypeDef* hcan;
-	UCAN_Handshake_Type handshakeType;
-	UCAN_Packet_Init* txPacketList;
+	UCAN_HandshakeType handshakeType;
+	UCAN_PacketInit* txPacketList;
 	uint32_t txPacketCount;
-	UCAN_Packet_Init* rxPacketList;
+	UCAN_PacketInit* rxPacketList;
 	uint32_t rxPacketCount;
 } UCAN_InitTypeDef;
 

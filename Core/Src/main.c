@@ -43,7 +43,7 @@
 CAN_HandleTypeDef hcan1;
 
 /* USER CODE BEGIN PV */
-extern UCAN_Packet_Holder _txMessage;
+extern UCAN_PacketHolder _txMessage;
 UCAN_Packet* deneme;
 
 uint8_t byte1;
@@ -226,7 +226,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 static void yCAN_Configure(void)
 {
-	UCAN_Packet_Init txInitPacketList[2]={
+	UCAN_PacketInit txInitPacketList[2]={
 			{.id=0x240, .item_count= 4,
 					.items = {
 							{.type = UCAN_U8 , .ptr = &byte1},
@@ -247,7 +247,7 @@ static void yCAN_Configure(void)
 			},
 	};
 
-	UCAN_Packet_Init rxInitPacketList[2] = {
+	UCAN_PacketInit rxInitPacketList[2] = {
 			{.id=0x240, .item_count= 3,
 					.items = {
 							{.type = UCAN_U8 , .ptr = &byte1_2},
