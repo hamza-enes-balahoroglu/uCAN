@@ -10,10 +10,10 @@ UCAN_StatusTypeDef uCAN_Init(UCAN_HandleTypeDef* ucan);
 
 UCAN_StatusTypeDef uCAN_Start(UCAN_HandleTypeDef* ucan, UCAN_Config* config);
 
-UCAN_StatusTypeDef uCAN_SendAll(void);
+UCAN_StatusTypeDef uCAN_SendAll(UCAN_HandleTypeDef* ucan);
 
-UCAN_StatusTypeDef uCAN_Update(void);
+UCAN_StatusTypeDef uCAN_Update(UCAN_HandleTypeDef* ucan);
 
-UCAN_StatusTypeDef uCAN_Handshake(void);
+UCAN_StatusTypeDef uCAN_Handshake(UCAN_HandleTypeDef* ucan);
 
 #endif
