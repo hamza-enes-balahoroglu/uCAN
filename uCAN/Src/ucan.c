@@ -2,51 +2,53 @@
 
 #include "ucan.h"
 
-UCAN_PacketHolder _txMessage;
 
-UCAN_PacketHolder _rxMessage;
-
-
-UCAN_StatusTypeDef isInitOk = UCAN_NOT_INITIALIZED;
-
-static uint8_t Calculate_DLC(UCAN_PacketInit* pkt);
-static UCAN_StatusTypeDef uCAN_CheckPacketInit(UCAN_PacketInit *packetList, uint32_t packetCount);
-static UCAN_Packet* uCAN_Finalize_Packet(UCAN_PacketInit* init_pkt, uint32_t count);
+static uint8_t Calculate_DLC(UCAN_PacketConfig* pkt);
+static UCAN_StatusTypeDef uCAN_CheckPacketConfig(UCAN_PacketConfig* configList, UCAN_PacketHolder* packetHolder);
+static UCAN_Packet* uCAN_Finalize_Packet(UCAN_PacketConfig* configList, UCAN_PacketHolder* packetHolder);
 
 
-UCAN_StatusTypeDef uCAN_Init(UCAN_InitTypeDef UCAN_InitStruct)
+UCAN_StatusTypeDef uCAN_Init(UCAN_HandleTypeDef* ucan)
 {
-	UCAN_StatusTypeDef txListCheck = uCAN_CheckPacketInit(UCAN_InitStruct.txPacketList, UCAN_InitStruct.txPacketCount);
-	UCAN_StatusTypeDef rxListCheck = uCAN_CheckPacketInit(UCAN_InitStruct.rxPacketList, UCAN_InitStruct.rxPacketCount);
+
+	ucan->status = UCAN_OK;
+	return UCAN_OK;
+}
+
+UCAN_StatusTypeDef uCAN_Start(UCAN_HandleTypeDef* ucan, UCAN_Config* config)
+{
+	UCAN_StatusTypeDef txListCheck = uCAN_CheckPacketConfig(config->txPacketList, &ucan->txHolder);
+	UCAN_StatusTypeDef rxListCheck = uCAN_CheckPacketConfig(config->rxPacketList, &ucan->rxHolder);
 
 	if (txListCheck != UCAN_OK)
 	{
-		isInitOk = txListCheck;
+		ucan->status = txListCheck;
 		return txListCheck;
 	}
 
 	if (rxListCheck != UCAN_OK)
 	{
-		isInitOk = rxListCheck;
+		ucan->status = rxListCheck;
 		return rxListCheck;
 	}
 
-	_txMessage.packets = uCAN_Finalize_Packet(UCAN_InitStruct.txPacketList, UCAN_InitStruct.txPacketCount);
-	_txMessage.count = UCAN_InitStruct.txPacketCount;
+	uCAN_Finalize_Packet(config->txPacketList, &ucan->txHolder);
 
-	_rxMessage.packets = uCAN_Finalize_Packet(UCAN_InitStruct.rxPacketList, UCAN_InitStruct.rxPacketCount);
-	_rxMessage.count = UCAN_InitStruct.rxPacketCount;
+	uCAN_Finalize_Packet(config->rxPacketList, &ucan->rxHolder);
 
-	isInitOk = UCAN_OK;
+
+	//HAL_CAN_Start(ucan->hcan);
+
+	ucan->status = UCAN_OK;
 	return UCAN_OK;
 }
 
 UCAN_StatusTypeDef uCAN_SendAll(void)
 {
-	if(isInitOk != UCAN_OK)
-	{
-		return isInitOk;
-	}
+//	if(isInitOk != UCAN_OK)
+//	{
+//		return isInitOk;
+//	}
 
 
 	return UCAN_OK;
@@ -54,25 +56,25 @@ UCAN_StatusTypeDef uCAN_SendAll(void)
 
 UCAN_StatusTypeDef uCAN_Update(void)
 {
-	if(isInitOk != UCAN_OK)
-	{
-		return isInitOk;
-	}
+	//	if(isInitOk != UCAN_OK)
+	//	{
+	//		return isInitOk;
+	//	}
 
 	return UCAN_OK;
 }
 
 UCAN_StatusTypeDef uCAN_Handshake(void)
 {
-	if(isInitOk != UCAN_OK)
-	{
-		return isInitOk;
-	}
+	//	if(isInitOk != UCAN_OK)
+	//	{
+	//		return isInitOk;
+	//	}
 
 	return UCAN_OK;
 }
 
-static uint8_t Calculate_DLC(UCAN_PacketInit* pkt)
+static uint8_t Calculate_DLC(UCAN_PacketConfig* pkt)
 {
     uint8_t dlc = 0;
     for (int i=0; i < pkt->item_count; i++) {
@@ -93,14 +95,14 @@ static uint8_t Calculate_DLC(UCAN_PacketInit* pkt)
     return dlc;
 }
 
-static UCAN_StatusTypeDef uCAN_CheckPacketInit(UCAN_PacketInit *packetList, uint32_t packetCount)
+static UCAN_StatusTypeDef uCAN_CheckPacketConfig(UCAN_PacketConfig* configList, UCAN_PacketHolder* packetHolder)
 {
-    if (packetList == NULL || packetCount == 0 || packetCount > UCAN_MAX_PACKET_COUNT) {
+    if (configList == NULL || packetHolder->count == 0 || packetHolder->count > UCAN_MAX_PACKET_COUNT) {
         return UCAN_INVALID_PARAM;
     }
 
-	for(int i=0; i < packetCount; i++){
-		UCAN_PacketInit *pkt = &packetList[i];
+	for(int i=0; i < packetHolder->count; i++){
+		UCAN_PacketConfig *pkt = &configList[i];
 
 		if(pkt == NULL)
 		{
@@ -117,23 +119,24 @@ static UCAN_StatusTypeDef uCAN_CheckPacketInit(UCAN_PacketInit *packetList, uint
 }
 
 
-static UCAN_Packet* uCAN_Finalize_Packet(UCAN_PacketInit* initPackets, UCAN_Packet* finalPackets, uint32_t count)
+static UCAN_Packet* uCAN_Finalize_Packet(UCAN_PacketConfig* configPackets, UCAN_PacketHolder* packetHolder)
 {
-	UCAN_Packet* packets = malloc(count * sizeof(UCAN_Packet));
+	UCAN_Packet* packets = packetHolder->packets;
+
 	if (!packets) return NULL;
 
-	for (uint32_t i = 0; i < count; ++i) {
+	for (uint32_t i = 0; i < packetHolder->count; ++i) {
 
 		uint8_t j = 0;
 		uint8_t byte_idx = 0;
 
-		packets[i].id = init_pkt[i].id;
-		packets[i].dlc = Calculate_DLC(init_pkt);
+		packets[i].id = configPackets[i].id;
+		packets[i].dlc = Calculate_DLC(configPackets);
 
 
-		while (j < init_pkt[i].item_count) {
-			void* data_ptr = init_pkt[i].items[j].ptr;
-			switch (init_pkt[i].items[j].type)
+		while (j < configPackets[i].item_count) {
+			void* data_ptr = configPackets[i].items[j].ptr;
+			switch (configPackets[i].items[j].type)
 			{
 				case UCAN_U8:
 					packets[i].bits[byte_idx++] = (uint8_t*)data_ptr;

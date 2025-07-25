@@ -15,6 +15,18 @@ typedef enum {
 	UCAN_ROLE_NONE
 } UCAN_NodeRole;
 
+typedef enum {
+	UCAN_NOT_INITIALIZED = 0x00U, // uCAN modülü init edilmedi
+	UCAN_OK              = 0x01U, // Sorun yok veri gitti
+	UCAN_ERROR           = 0x02U, // veri gönderilemedi genel hata
+	UCAN_MISSING_VAL     = 0x03U, // veri yanlış ya da yazılan uzunluk uyumsuz
+	UCAN_NO_CONNECTION   = 0x04U, // can hattı kopunca döner
+	UCAN_NO_CHANGED_VAL  = 0x05U, // değişen değer yoksa göndermez
+	UCAN_TIMEOUT         = 0x06U, // işlem zaman aşımına uğradı
+	UCAN_INVALID_PARAM   = 0x07U, // fonksiyona hatalı parametre gönderildi
+	UCAN_BUSY            = 0x08U, // can hattı meşgul, şu anda işleme alınamaz
+} UCAN_StatusTypeDef;
+
 typedef struct {
     void* ptr;
     UCAN_DataType type;
@@ -24,7 +36,7 @@ typedef struct {
     uint32_t id;
     uint8_t item_count;
     UCAN_Data items[8];
-} UCAN_PacketInit;
+} UCAN_PacketConfig;
 
 typedef struct {
     uint32_t id;
@@ -52,24 +64,11 @@ typedef struct {
 } UCAN_Config;
 
 typedef struct {
-    CAN_HandleTypeDef *hcan;
+    CAN_HandleTypeDef* hcan;
     UCAN_NodeInfo node;
-    uint32_t txPacketCount;
-    uint32_t rxPacketCount;
-    UCAN_Packet* txPackets;
-    UCAN_Packet* rxPackets;
-} YCAN_HandleTypeDef;
-
-typedef enum {
-  UCAN_OK              = 0x00U, // Sorun yok veri gitti
-  UCAN_ERROR           = 0x01U, // veri gönderilemedi genel hata
-  UCAN_MISSING_VAL     = 0x02U, // veri yanlış ya da yazılan uzunluk uyumsuz
-  UCAN_NO_CONNECTION   = 0x03U, // can hattı kopunca döner
-  UCAN_NO_CHANGED_VAL  = 0x04U, // değişen değer yoksa göndermez
-  UCAN_TIMEOUT         = 0x05U, // işlem zaman aşımına uğradı
-  UCAN_INVALID_PARAM   = 0x06U, // fonksiyona hatalı parametre gönderildi
-  UCAN_BUSY            = 0x07U, // can hattı meşgul, şu anda işleme alınamaz
-  UCAN_NOT_INITIALIZED = 0x08U, // uCAN modülü init edilmedi
-} UCAN_StatusTypeDef;
+    UCAN_PacketHolder txHolder;
+    UCAN_PacketHolder rxHolder;
+    UCAN_StatusTypeDef status;
+} UCAN_HandleTypeDef;
 
 #endif
