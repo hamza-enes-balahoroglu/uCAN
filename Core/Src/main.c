@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ycan.h"
+#include "ucan.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,8 +43,8 @@
 CAN_HandleTypeDef hcan1;
 
 /* USER CODE BEGIN PV */
-extern YCAN_Packet_Holder _txMessage;
-YCAN_Packet* deneme;
+extern UCAN_Packet_Holder _txMessage;
+UCAN_Packet* deneme;
 
 uint8_t byte1;
 uint8_t byte1_2;
@@ -200,6 +200,7 @@ static void MX_CAN1_Init(void)
   /* USER CODE BEGIN CAN1_Init 2 */
 
   /* USER CODE END CAN1_Init 2 */
+
 }
 
 /**
@@ -225,47 +226,48 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 static void yCAN_Configure(void)
 {
-	YCAN_Packet_Init txInitPacketList[2]={
+	UCAN_Packet_Init txInitPacketList[2]={
 			{.id=0x240, .item_count= 4,
 					.items = {
-							{.type = YCAN_U8 , .ptr = &byte1},
-							{.type = YCAN_U16, .ptr = &byte2},
+							{.type = UCAN_U8 , .ptr = &byte1},
+							{.type = UCAN_U16, .ptr = &byte2},
 
-							{.type = YCAN_U32, .ptr = &byte4},
-							{.type = YCAN_U8,  .ptr = &byte1_2},
+							{.type = UCAN_U32, .ptr = &byte4},
+							{.type = UCAN_U8,  .ptr = &byte1_2},
 					}
 			},
 			{.id=0x250, .item_count= 2,
 					.items = {
-							{.type = YCAN_U8 , .ptr = &byte1_3},
-							//{.type = YCAN_U16, .ptr = &byte2},
+							{.type = UCAN_U8 , .ptr = &byte1_3},
+							//{.type = UCAN_U16, .ptr = &byte2},
 
-							{.type = YCAN_U32, .ptr = &byte4_3},
-							//{.type = YCAN_U8,  .ptr = &byte1_2},
+							{.type = UCAN_U32, .ptr = &byte4_3},
+							//{.type = UCAN_U8,  .ptr = &byte1_2},
 					}
 			},
 	};
-	YCAN_Packet_Init rxInitPacketList[2] = {
+
+	UCAN_Packet_Init rxInitPacketList[2] = {
 			{.id=0x240, .item_count= 3,
 					.items = {
-							{.type = YCAN_U8 , .ptr = &byte1_2},
+							{.type = UCAN_U8 , .ptr = &byte1_2},
 							//{.type = YCAN_U16, .ptr = &byte2},
 
-							{.type = YCAN_U32, .ptr = &byte4_3},
+							{.type = UCAN_U32, .ptr = &byte4_3},
 					}
 			},
 			{.id=0x250, .item_count= 2,
 					.items = {
-							{.type = YCAN_U32 , .ptr = &byte4},
-							//{.type = YCAN_U16, .ptr = &byte2},
+							{.type = UCAN_U32 , .ptr = &byte4},
+							//{.type = UCAN_U16, .ptr = &byte2},
 
-							{.type = YCAN_U32, .ptr = &byte4_3},
-							//{.type = YCAN_U8,  .ptr = &byte1_2},
+							{.type = UCAN_U32, .ptr = &byte4_3},
+							//{.type = UCAN_U8,  .ptr = &byte1_2},
 					}
 			},
 	};
 
-	if (YCAN_INIT_AUTO(txInitPacketList, rxInitPacketList) != YCAN_OK)
+	if (UCAN_INIT_AUTO(txInitPacketList, rxInitPacketList) != UCAN_OK)
 	{
 		Error_Handler();
 	}
