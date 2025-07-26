@@ -146,11 +146,11 @@ typedef struct {
   * @note   Encapsulates CAN peripheral handle, node information, packet management, and status.
   */
 typedef struct {
-    CAN_HandleTypeDef* hcan;       /*!< Pointer to the STM32 HAL CAN handle */
-    UCAN_NodeInfo node;            /*!< Information about this node and its clients */
-    UCAN_PacketHolder txHolder;    /*!< Container for transmit CAN packets */
-    UCAN_PacketHolder rxHolder;    /*!< Container for receive CAN packets */
-    UCAN_StatusTypeDef status;     /*!< Current status of the uCAN module */
+    CAN_HandleTypeDef* hcan;       		/*!< Pointer to the STM32 HAL CAN handle */
+    UCAN_NodeInfo node;            		/*!< Information about this node and its clients */
+    UCAN_PacketHolder txHolder;    		/*!< Container for transmit CAN packets */
+    UCAN_PacketHolder rxHolder;    		/*!< Container for receive CAN packets */
+    UCAN_StatusTypeDef status;     		/*!< Current status of the uCAN module */
 } UCAN_HandleTypeDef;
 
 #endif
