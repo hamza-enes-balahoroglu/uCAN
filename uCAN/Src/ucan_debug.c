@@ -35,9 +35,9 @@ UCAN_StatusTypeDef uCAN_Debug_CheckPacketConfig(UCAN_PacketConfig* configList, U
 			return UCAN_INVALID_PARAM;
 		}
 
-		uCAN_CheckIsDataType(pkt);
+		uCAN_Debug_CheckIsDataType(pkt);
 
-		uint8_t dlc = uCAN_Calculate_DLC(pkt);
+		uint8_t dlc = uCAN_Debug_Calculate_DLC(pkt);
 		if(dlc > 8 || dlc == 0)
 		{
 			return UCAN_MISSING_VAL;
@@ -47,11 +47,9 @@ UCAN_StatusTypeDef uCAN_Debug_CheckPacketConfig(UCAN_PacketConfig* configList, U
 }
 
 
-UCAN_Packet uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, UCAN_PacketHolder* packetHolder)
+UCAN_StatusTypeDef uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, UCAN_PacketHolder* packetHolder)
 {
 	UCAN_Packet* packets = packetHolder->packets;
-
-	if (!packets) return NULL;
 
 	for (uint32_t i = 0; i < packetHolder->count; ++i) {
 
@@ -59,7 +57,7 @@ UCAN_Packet uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, UCAN_Pac
 		uint8_t byte_idx = 0;
 
 		packets[i].id = configPackets[i].id;
-		packets[i].dlc = uCAN_Calculate_DLC(configPackets);
+		packets[i].dlc = uCAN_Debug_Calculate_DLC(configPackets);
 
 
 		while (j < configPackets[i].item_count) {
@@ -86,11 +84,8 @@ UCAN_Packet uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, UCAN_Pac
 			}
 			j++;
 		}
-
 	}
-
-
-	return packets;
+	return UCAN_OK;
 }
 
 UCAN_StatusTypeDef uCAN_Debug_CheckNodeInfo(UCAN_NodeInfo* node)
