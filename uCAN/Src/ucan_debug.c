@@ -90,11 +90,22 @@ UCAN_StatusTypeDef uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, U
 
 UCAN_StatusTypeDef uCAN_Debug_CheckNodeInfo(UCAN_NodeInfo* node)
 {
-	if (node->clientIdList == NULL) {
+	if (node == NULL || node->clientIdList == NULL) {
 		return UCAN_INVALID_PARAM;
 	}
 
 	assert_param(IS_UCAN_NODE_ROLE(node->role));
+
+	for (uint32_t outerIndex = 0; outerIndex < node->clientCount; outerIndex++)
+	{
+	    for (uint32_t innerIndex = outerIndex + 1; innerIndex < node->clientCount; innerIndex++)
+	    {
+	        if (node->clientIdList[outerIndex] == node->clientIdList[innerIndex])
+	        {
+	            return UCAN_DUPLICATE_ID;
+	        }
+	    }
+	}
 
 	return UCAN_OK;
 }
@@ -103,9 +114,12 @@ UCAN_StatusTypeDef uCAN_Debug_CheckIsDataType(UCAN_PacketConfig* pkt)
 	if (pkt == NULL) {
 		return UCAN_INVALID_PARAM;
 	}
-    for (int i=0; i < pkt->item_count; i++) {
+
+    for (uint32_t i=0; i < pkt->item_count; i++)
+    {
     	assert_param(IS_UCAN_DATA_TYPE(pkt->item[i].type));
     }
+
     return UCAN_OK;
 }
 UCAN_StatusTypeDef uCAN_Debug_CheckUniquePackets(UCAN_HandleTypeDef* ucan)
@@ -115,7 +129,7 @@ UCAN_StatusTypeDef uCAN_Debug_CheckUniquePackets(UCAN_HandleTypeDef* ucan)
 		return UCAN_INVALID_PARAM;
 	}
 
-	for(int i = 0; i< ucan->txHolder.count; i++)
+	for(uint32_t i = 0; i< ucan->txHolder.count; i++)
 	{
 		UCAN_StatusTypeDef status = uCAN_Debug_CheckUniqueID(ucan->txHolder.packets[i].id, &ucan->txHolder, &ucan->rxHolder);
 		if(status != UCAN_OK)
@@ -125,7 +139,7 @@ UCAN_StatusTypeDef uCAN_Debug_CheckUniquePackets(UCAN_HandleTypeDef* ucan)
 		}
 	}
 
-	for(int i = 0; i< ucan->rxHolder.count; i++)
+	for(uint32_t i = 0; i< ucan->rxHolder.count; i++)
 	{
 		UCAN_StatusTypeDef status = uCAN_Debug_CheckUniqueID(ucan->rxHolder.packets[i].id, &ucan->txHolder, &ucan->rxHolder);
 		if (status != UCAN_OK)
@@ -140,7 +154,8 @@ UCAN_StatusTypeDef uCAN_Debug_CheckUniquePackets(UCAN_HandleTypeDef* ucan)
 
 UCAN_StatusTypeDef uCAN_Debug_CheckUniqueID(uint32_t id, UCAN_PacketHolder* txHolder, UCAN_PacketHolder* rxHolder)
 {
-    for (uint8_t i = 0; i < txHolder->count; i++)
+
+    for (uint32_t i = 0; i < txHolder->count; i++)
     {
         if (txHolder->packets[i].id == id)
         {
@@ -148,7 +163,7 @@ UCAN_StatusTypeDef uCAN_Debug_CheckUniqueID(uint32_t id, UCAN_PacketHolder* txHo
         }
     }
 
-    for (uint8_t i = 0; i < rxHolder->count; i++)
+    for (uint32_t i = 0; i < rxHolder->count; i++)
     {
         if (rxHolder->packets[i].id == id)
         {
