@@ -60,7 +60,8 @@ typedef enum {
     UCAN_NO_CHANGED_VAL   	= 0x05U,	/*!< No change in value, transmission skipped */
     UCAN_TIMEOUT          	= 0x06U,	/*!< Operation timed out */
     UCAN_INVALID_PARAM    	= 0x07U,	/*!< Invalid parameter passed to function */
-    UCAN_BUSY             	= 0x08U  	/*!< CAN bus is busy, try again later */
+    UCAN_BUSY             	= 0x08U,  	/*!< CAN bus is busy, try again later */
+	UCAN_DUPLICATE_ID		= 0x09U		/*!< Duplicate ID detected in client or packet list */
 } UCAN_StatusTypeDef;
 
 

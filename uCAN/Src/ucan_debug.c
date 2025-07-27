@@ -144,7 +144,7 @@ UCAN_StatusTypeDef uCAN_Debug_CheckUniqueID(uint32_t id, UCAN_PacketHolder* txHo
     {
         if (txHolder->packets[i].id == id)
         {
-        	return UCAN_MISSING_VAL;
+        	return UCAN_DUPLICATE_ID;
         }
     }
 
@@ -152,7 +152,7 @@ UCAN_StatusTypeDef uCAN_Debug_CheckUniqueID(uint32_t id, UCAN_PacketHolder* txHo
     {
         if (rxHolder->packets[i].id == id)
         {
-        	return UCAN_MISSING_VAL;
+        	return UCAN_DUPLICATE_ID;
         }
     }
 
