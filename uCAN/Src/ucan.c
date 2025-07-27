@@ -56,21 +56,28 @@ UCAN_StatusTypeDef uCAN_Start(UCAN_HandleTypeDef* ucan, UCAN_Config* config)
 
     	uCAN_Debug_FinalizePacket(config->rxPacketList, &ucan->rxHolder);
 
-    	if(uCAN_Debug_CheckUniquePackets(ucan) == UCAN_OK)
+    	if(uCAN_Debug_CheckUniquePackets(ucan) != UCAN_OK)
     	{
+    		ucan->status = UCAN_DUPLICATE_ID;
     		return UCAN_DUPLICATE_ID;
     	}
 
 
-    	if (HAL_CAN_ConfigFilter(ucan->hcan, &ucan->filter) != HAL_OK) {
+    	if (HAL_CAN_ConfigFilter(ucan->hcan, &ucan->filter) != HAL_OK)
+    	{
+    		ucan->status = UCAN_ERROR_FILTER_CONFIG;
     		return UCAN_ERROR_FILTER_CONFIG;
     	}
 
-    	if (HAL_CAN_Start(ucan->hcan) != HAL_OK) {
+    	if (HAL_CAN_Start(ucan->hcan) != HAL_OK)
+    	{
+    		ucan->status = UCAN_ERROR_CAN_START;
     		return UCAN_ERROR_CAN_START;
     	}
 
-    	if (HAL_CAN_ActivateNotification(ucan->hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK) {
+    	if (HAL_CAN_ActivateNotification(ucan->hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+    	{
+    		ucan->status = UCAN_ERROR_CAN_NOTIFICATION;
     		return UCAN_ERROR_CAN_NOTIFICATION;
     	}
     }
@@ -79,7 +86,6 @@ UCAN_StatusTypeDef uCAN_Start(UCAN_HandleTypeDef* ucan, UCAN_Config* config)
 		return ucan->status;
 	}
 
-	ucan->status = UCAN_OK;
 	return UCAN_OK;
 }
 
