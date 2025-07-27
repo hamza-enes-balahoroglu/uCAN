@@ -154,12 +154,12 @@ UCAN_StatusTypeDef uCAN_Debug_CheckUniquePackets(UCAN_HandleTypeDef* ucan)
 
 UCAN_StatusTypeDef uCAN_Debug_CheckUniqueID(uint32_t id, UCAN_PacketHolder* txHolder, UCAN_PacketHolder* rxHolder)
 {
-
+	uint32_t idCounter = 0;
     for (uint32_t i = 0; i < txHolder->count; i++)
     {
         if (txHolder->packets[i].id == id)
         {
-        	return UCAN_DUPLICATE_ID;
+        	idCounter++;
         }
     }
 
@@ -167,8 +167,12 @@ UCAN_StatusTypeDef uCAN_Debug_CheckUniqueID(uint32_t id, UCAN_PacketHolder* txHo
     {
         if (rxHolder->packets[i].id == id)
         {
-        	return UCAN_DUPLICATE_ID;
+        	idCounter++;
         }
+    }
+
+    if(idCounter>1){
+    	return UCAN_DUPLICATE_ID;
     }
 
     return UCAN_OK;
