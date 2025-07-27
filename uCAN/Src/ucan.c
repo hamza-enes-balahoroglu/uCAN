@@ -58,8 +58,10 @@ UCAN_StatusTypeDef uCAN_Start(UCAN_HandleTypeDef* ucan, UCAN_Config* config)
 
 	uCAN_Debug_FinalizePacket(config->rxPacketList, &ucan->rxHolder);
 
-
-
+	if(uCAN_Debug_CheckUniquePackets(ucan) == UCAN_OK)
+	{
+		return UCAN_INVALID_PARAM;
+	}
 
 	ucan->status = UCAN_OK;
 	return UCAN_OK;
@@ -67,9 +69,9 @@ UCAN_StatusTypeDef uCAN_Start(UCAN_HandleTypeDef* ucan, UCAN_Config* config)
 
 UCAN_StatusTypeDef uCAN_SendAll(UCAN_HandleTypeDef* ucan)
 {
-	if(ucan->status == UCAN_NOT_INITIALIZED)
+	if(ucan->status == UCAN_NOT_INITIALIZED || ucan->status == UCAN_INVALID_PARAM)
 	{
-		return UCAN_NOT_INITIALIZED;
+		return ucan->status;
 	}
 
 	//TODO
@@ -79,9 +81,9 @@ UCAN_StatusTypeDef uCAN_SendAll(UCAN_HandleTypeDef* ucan)
 
 UCAN_StatusTypeDef uCAN_Update(UCAN_HandleTypeDef* ucan)
 {
-	if(ucan->status == UCAN_NOT_INITIALIZED)
+	if(ucan->status == UCAN_NOT_INITIALIZED || ucan->status == UCAN_INVALID_PARAM)
 	{
-		return UCAN_NOT_INITIALIZED;
+		return ucan->status;
 	}
 
 
@@ -92,9 +94,9 @@ UCAN_StatusTypeDef uCAN_Update(UCAN_HandleTypeDef* ucan)
 
 UCAN_StatusTypeDef uCAN_Handshake(UCAN_HandleTypeDef* ucan)
 {
-	if(ucan->status == UCAN_NOT_INITIALIZED)
+	if(ucan->status == UCAN_NOT_INITIALIZED || ucan->status == UCAN_INVALID_PARAM)
 	{
-		return UCAN_NOT_INITIALIZED;
+		return ucan->status;
 	}
 
 	//TODO

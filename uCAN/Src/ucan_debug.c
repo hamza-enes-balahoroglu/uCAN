@@ -108,3 +108,53 @@ UCAN_StatusTypeDef uCAN_Debug_CheckIsDataType(UCAN_PacketConfig* pkt)
     }
     return UCAN_OK;
 }
+UCAN_StatusTypeDef uCAN_Debug_CheckUniquePackets(UCAN_HandleTypeDef* ucan)
+{
+	if(ucan == NULL)
+	{
+		return UCAN_INVALID_PARAM;
+	}
+
+	for(int i = 0; i< ucan->txHolder.count; i++)
+	{
+		UCAN_StatusTypeDef status = uCAN_Debug_CheckUniqueID(ucan->txHolder.packets[i].id, &ucan->txHolder, &ucan->rxHolder);
+		if(status != UCAN_OK)
+		{
+			ucan->status = status;
+			return status;
+		}
+	}
+
+	for(int i = 0; i< ucan->rxHolder.count; i++)
+	{
+		UCAN_StatusTypeDef status = uCAN_Debug_CheckUniqueID(ucan->rxHolder.packets[i].id, &ucan->txHolder, &ucan->rxHolder);
+		if (status != UCAN_OK)
+		{
+			ucan->status = status;
+			return status;
+		}
+	}
+
+	return UCAN_OK;
+}
+
+UCAN_StatusTypeDef uCAN_Debug_CheckUniqueID(uint32_t id, UCAN_PacketHolder* txHolder, UCAN_PacketHolder* rxHolder)
+{
+    for (uint8_t i = 0; i < txHolder->count; i++)
+    {
+        if (txHolder->packets[i].id == id)
+        {
+        	return UCAN_MISSING_VAL;
+        }
+    }
+
+    for (uint8_t i = 0; i < rxHolder->count; i++)
+    {
+        if (rxHolder->packets[i].id == id)
+        {
+        	return UCAN_MISSING_VAL;
+        }
+    }
+
+    return UCAN_OK;
+}
