@@ -1,6 +1,6 @@
 #include "ucan_debug.h"
 
-uint8_t Calculate_DLC(UCAN_PacketConfig* pkt)
+uint8_t uCAN_Debug_Calculate_DLC(UCAN_PacketConfig* pkt)
 {
     uint8_t dlc = 0;
     for (int i=0; i < pkt->item_count; i++) {
@@ -21,14 +21,7 @@ uint8_t Calculate_DLC(UCAN_PacketConfig* pkt)
     return dlc;
 }
 
-void uCAN_CheckIsDataType(UCAN_PacketConfig* pkt)
-{
-    for (int i=0; i < pkt->item_count; i++) {
-    	assert_param(IS_UCAN_DATA_TYPE(pkt->item[i].type));
-    }
-}
-
-UCAN_StatusTypeDef uCAN_CheckPacketConfig(UCAN_PacketConfig* configList, UCAN_PacketHolder* packetHolder)
+UCAN_StatusTypeDef uCAN_Debug_CheckPacketConfig(UCAN_PacketConfig* configList, UCAN_PacketHolder* packetHolder)
 {
     if (configList == NULL || packetHolder->count == 0) {
         return UCAN_INVALID_PARAM;
@@ -44,7 +37,7 @@ UCAN_StatusTypeDef uCAN_CheckPacketConfig(UCAN_PacketConfig* configList, UCAN_Pa
 
 		uCAN_CheckIsDataType(pkt);
 
-		uint8_t dlc = Calculate_DLC(pkt);
+		uint8_t dlc = uCAN_Calculate_DLC(pkt);
 		if(dlc > 8 || dlc == 0)
 		{
 			return UCAN_MISSING_VAL;
@@ -54,7 +47,7 @@ UCAN_StatusTypeDef uCAN_CheckPacketConfig(UCAN_PacketConfig* configList, UCAN_Pa
 }
 
 
-UCAN_Packet* uCAN_Finalize_Packet(UCAN_PacketConfig* configPackets, UCAN_PacketHolder* packetHolder)
+UCAN_Packet uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, UCAN_PacketHolder* packetHolder)
 {
 	UCAN_Packet* packets = packetHolder->packets;
 
@@ -66,7 +59,7 @@ UCAN_Packet* uCAN_Finalize_Packet(UCAN_PacketConfig* configPackets, UCAN_PacketH
 		uint8_t byte_idx = 0;
 
 		packets[i].id = configPackets[i].id;
-		packets[i].dlc = Calculate_DLC(configPackets);
+		packets[i].dlc = uCAN_Calculate_DLC(configPackets);
 
 
 		while (j < configPackets[i].item_count) {
@@ -91,7 +84,7 @@ UCAN_Packet* uCAN_Finalize_Packet(UCAN_PacketConfig* configPackets, UCAN_PacketH
 				default:
 					break;
 			}
-			j++; // sıradaki item'a geçiyoruz
+			j++;
 		}
 
 	}
@@ -100,7 +93,7 @@ UCAN_Packet* uCAN_Finalize_Packet(UCAN_PacketConfig* configPackets, UCAN_PacketH
 	return packets;
 }
 
-UCAN_StatusTypeDef uCAN_CheckNodeInfo(UCAN_NodeInfo* node)
+UCAN_StatusTypeDef uCAN_Debug_CheckNodeInfo(UCAN_NodeInfo* node)
 {
 	if (node->clientIdList == NULL) {
 		return UCAN_INVALID_PARAM;
@@ -109,4 +102,14 @@ UCAN_StatusTypeDef uCAN_CheckNodeInfo(UCAN_NodeInfo* node)
 	assert_param(IS_UCAN_NODE_ROLE(node->role));
 
 	return UCAN_OK;
+}
+UCAN_StatusTypeDef uCAN_Debug_CheckIsDataType(UCAN_PacketConfig* pkt)
+{
+	if (pkt == NULL) {
+		return UCAN_INVALID_PARAM;
+	}
+    for (int i=0; i < pkt->item_count; i++) {
+    	assert_param(IS_UCAN_DATA_TYPE(pkt->item[i].type));
+    }
+    return UCAN_OK;
 }
