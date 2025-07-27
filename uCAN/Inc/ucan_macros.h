@@ -1,3 +1,30 @@
+/**
+  ******************************************************************************
+  * @file    ucan_macros.h
+  * @brief   General-purpose macros for uCAN and application-level use.
+  *
+  * This file provides a collection of helper macros commonly used in the uCAN
+  * communication layer, but also useful in application code.
+  *
+  * Macros such as `UCAN_PACKET_COUNT()` and `UCAN_CLIENT_COUNT()` allow
+  * fast and safe calculation of array lengths. Validation macros like
+  * `IS_UCAN_STATUS_TYPE_DEF()` help ensure correct parameter usage when
+  * working with the uCAN API.
+  *
+  * @note    While primarily designed for the uCAN library, many of these macros
+  *          can be reused freely in external modules where applicable.
+  *
+  *
+  *	  						 _____          _   _
+  *	  						/ ____|   /\   | \ | |
+  *	  				  _   _| |       /  \  |  \| |
+  *	  				 | | | | |      / /\ \ | . ` |
+  *	  				 | |_| | |____ / ____ \| |\  |
+  *	  				  \__,_|\_____/_/    \_\_| \_|
+  *
+  ******************************************************************************
+  */
+
 #ifndef UCAN_MACROS
 #define UCAN_MACROS
 
