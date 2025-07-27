@@ -16,9 +16,8 @@ const CAN_FilterTypeDef defaultFilterConfig = {
 
 UCAN_StatusTypeDef uCAN_Init(UCAN_HandleTypeDef* ucan)
 {
-	if(ucan->hcan == NULL)
+	if(ucan == NULL || ucan->hcan == NULL)
 	{
-		ucan->status = UCAN_INVALID_PARAM;
 		return UCAN_INVALID_PARAM;
 	}
 
@@ -28,12 +27,18 @@ UCAN_StatusTypeDef uCAN_Init(UCAN_HandleTypeDef* ucan)
 	}
 
 
+
 	ucan->status = UCAN_OK;
 	return UCAN_OK;
 }
 
 UCAN_StatusTypeDef uCAN_Start(UCAN_HandleTypeDef* ucan, UCAN_Config* config)
 {
+	if(ucan == NULL || config == NULL)
+	{
+		return UCAN_INVALID_PARAM;
+	}
+
     if(ucan->status == UCAN_OK)
     {
 
@@ -91,9 +96,14 @@ UCAN_StatusTypeDef uCAN_Start(UCAN_HandleTypeDef* ucan, UCAN_Config* config)
 
 UCAN_StatusTypeDef uCAN_SendAll(UCAN_HandleTypeDef* ucan)
 {
-	if(ucan->status == UCAN_NOT_INITIALIZED || ucan->status == UCAN_INVALID_PARAM)
+	if(ucan == NULL)
 	{
-		return ucan->status;
+		return UCAN_INVALID_PARAM;
+	}
+
+	if(ucan->status == UCAN_NOT_INITIALIZED)
+	{
+		return UCAN_NOT_INITIALIZED;
 	}
 
 	//TODO
@@ -103,9 +113,14 @@ UCAN_StatusTypeDef uCAN_SendAll(UCAN_HandleTypeDef* ucan)
 
 UCAN_StatusTypeDef uCAN_Update(UCAN_HandleTypeDef* ucan)
 {
-	if(ucan->status == UCAN_NOT_INITIALIZED || ucan->status == UCAN_INVALID_PARAM)
+	if(ucan == NULL)
 	{
-		return ucan->status;
+		return UCAN_INVALID_PARAM;
+	}
+
+	if(ucan->status == UCAN_NOT_INITIALIZED)
+	{
+		return UCAN_NOT_INITIALIZED;
 	}
 
 
@@ -116,9 +131,14 @@ UCAN_StatusTypeDef uCAN_Update(UCAN_HandleTypeDef* ucan)
 
 UCAN_StatusTypeDef uCAN_Handshake(UCAN_HandleTypeDef* ucan)
 {
-	if(ucan->status == UCAN_NOT_INITIALIZED || ucan->status == UCAN_INVALID_PARAM)
+	if(ucan == NULL)
 	{
-		return ucan->status;
+		return UCAN_INVALID_PARAM;
+	}
+
+	if(ucan->status == UCAN_NOT_INITIALIZED)
+	{
+		return UCAN_NOT_INITIALIZED;
 	}
 
 	//TODO
