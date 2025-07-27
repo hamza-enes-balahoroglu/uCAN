@@ -34,33 +34,49 @@ UCAN_StatusTypeDef uCAN_Init(UCAN_HandleTypeDef* ucan)
 
 UCAN_StatusTypeDef uCAN_Start(UCAN_HandleTypeDef* ucan, UCAN_Config* config)
 {
-	if(ucan->status == UCAN_NOT_INITIALIZED)
+    if(ucan->status == UCAN_OK)
+    {
+
+    	UCAN_StatusTypeDef txListCheck = uCAN_Debug_CheckPacketConfig(config->txPacketList, &ucan->txHolder);
+    	UCAN_StatusTypeDef rxListCheck = uCAN_Debug_CheckPacketConfig(config->rxPacketList, &ucan->rxHolder);
+
+    	if (txListCheck != UCAN_OK)
+    	{
+    		ucan->status = txListCheck;
+    		return txListCheck;
+    	}
+
+    	if (rxListCheck != UCAN_OK)
+    	{
+    		ucan->status = rxListCheck;
+    		return rxListCheck;
+    	}
+
+    	uCAN_Debug_FinalizePacket(config->txPacketList, &ucan->txHolder);
+
+    	uCAN_Debug_FinalizePacket(config->rxPacketList, &ucan->rxHolder);
+
+    	if(uCAN_Debug_CheckUniquePackets(ucan) == UCAN_OK)
+    	{
+    		return UCAN_DUPLICATE_ID;
+    	}
+
+
+    	if (HAL_CAN_ConfigFilter(ucan->hcan, &ucan->filter) != HAL_OK) {
+    		return UCAN_ERROR_FILTER_CONFIG;
+    	}
+
+    	if (HAL_CAN_Start(ucan->hcan) != HAL_OK) {
+    		return UCAN_ERROR_CAN_START;
+    	}
+
+    	if (HAL_CAN_ActivateNotification(ucan->hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK) {
+    		return UCAN_ERROR_CAN_NOTIFICATION;
+    	}
+    }
+	else
 	{
-		return UCAN_NOT_INITIALIZED;
-	}
-
-	UCAN_StatusTypeDef txListCheck = uCAN_Debug_CheckPacketConfig(config->txPacketList, &ucan->txHolder);
-	UCAN_StatusTypeDef rxListCheck = uCAN_Debug_CheckPacketConfig(config->rxPacketList, &ucan->rxHolder);
-
-	if (txListCheck != UCAN_OK)
-	{
-		ucan->status = txListCheck;
-		return txListCheck;
-	}
-
-	if (rxListCheck != UCAN_OK)
-	{
-		ucan->status = rxListCheck;
-		return rxListCheck;
-	}
-
-	uCAN_Debug_FinalizePacket(config->txPacketList, &ucan->txHolder);
-
-	uCAN_Debug_FinalizePacket(config->rxPacketList, &ucan->rxHolder);
-
-	if(uCAN_Debug_CheckUniquePackets(ucan) == UCAN_OK)
-	{
-		return UCAN_INVALID_PARAM;
+		return ucan->status;
 	}
 
 	ucan->status = UCAN_OK;

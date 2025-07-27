@@ -52,16 +52,19 @@ typedef enum {
   * @note   Indicates the result of CAN operations and error conditions.
   */
 typedef enum {
-    UCAN_NOT_INITIALIZED  	= 0x00U,	/*!< uCAN module is not initialized */
-    UCAN_OK               	= 0x01U,	/*!< Operation successful, data sent */
-    UCAN_ERROR            	= 0x02U,	/*!< General failure during data transmission */
-    UCAN_MISSING_VAL      	= 0x03U,	/*!< Data mismatch or invalid length specified */
-    UCAN_NO_CONNECTION    	= 0x04U,	/*!< No connection on the CAN bus */
-    UCAN_NO_CHANGED_VAL   	= 0x05U,	/*!< No change in value, transmission skipped */
-    UCAN_TIMEOUT          	= 0x06U,	/*!< Operation timed out */
-    UCAN_INVALID_PARAM    	= 0x07U,	/*!< Invalid parameter passed to function */
-    UCAN_BUSY             	= 0x08U,  	/*!< CAN bus is busy, try again later */
-	UCAN_DUPLICATE_ID		= 0x09U		/*!< Duplicate ID detected in client or packet list */
+    UCAN_NOT_INITIALIZED  		= 0x00U,	/*!< uCAN module is not initialized */
+    UCAN_OK               		= 0x01U,	/*!< Operation successful, data sent */
+    UCAN_ERROR            		= 0x02U,	/*!< General failure during data transmission */
+    UCAN_MISSING_VAL      		= 0x03U,	/*!< Data mismatch or invalid length specified */
+    UCAN_NO_CONNECTION    		= 0x04U,	/*!< No connection on the CAN bus */
+    UCAN_NO_CHANGED_VAL   		= 0x05U,	/*!< No change in value, transmission skipped */
+    UCAN_TIMEOUT          		= 0x06U,	/*!< Operation timed out */
+    UCAN_INVALID_PARAM    		= 0x07U,	/*!< Invalid parameter passed to function */
+    UCAN_BUSY             		= 0x08U,  	/*!< CAN bus is busy, try again later */
+	UCAN_DUPLICATE_ID			= 0x09U,	/*!< Duplicate ID detected in client or packet list */
+	UCAN_ERROR_FILTER_CONFIG    = 0x0AU, 	/*!< Failed to configure CAN filter settings */
+	UCAN_ERROR_CAN_START        = 0x0BU, 	/*!< Error occurred while starting the CAN peripheral */
+	UCAN_ERROR_CAN_NOTIFICATION = 0x0CU, 	/*!< Failed to activate CAN RX/TX/FIFO notifications */
 } UCAN_StatusTypeDef;
 
 
