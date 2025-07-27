@@ -1,6 +1,7 @@
 /**
   ******************************************************************************
   * @file    ucan_types.h
+  * @author  Hamza Enes Balahoroğlu
   * @brief   Type definitions and data structures for the uCAN communication module.
   *          This file contains enums, structs, and typedefs used throughout the
   *          uCAN library to manage CAN bus communication, node roles, packet

@@ -1,6 +1,7 @@
 /**
   ******************************************************************************
   * @file    ucan_macros.h
+  * @author  Hamza Enes Balahoroğlu
   * @brief   General-purpose macros for uCAN and application-level use.
   *
   * This file provides a collection of helper macros commonly used in the uCAN
