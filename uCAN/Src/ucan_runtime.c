@@ -48,6 +48,11 @@ UCAN_StatusTypeDef uCAN_Runtime_UpdatePacket(UCAN_HandleTypeDef* ucan)
 	UCAN_Packet key = {.id = rxHeader.StdId};
 	UCAN_Packet* found = bsearch(&key, ucan->rxHolder.packets, ucan->rxHolder.count, sizeof(UCAN_Packet), uCAN_Runtime_ComparePacketId);
 
+	if(found == NULL)
+	{
+		return UCAN_ERROR_UNKNOWN_ID;
+	}
+
 	for(int i = 0; i < found->dlc; i++) {
 		*(found->bits[i]) = data[i];
 	}

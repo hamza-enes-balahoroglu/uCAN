@@ -67,6 +67,7 @@ typedef enum {
 	UCAN_ERROR_FILTER_CONFIG    = 0x0AU, 	/*!< Failed to configure CAN filter settings */
 	UCAN_ERROR_CAN_START        = 0x0BU, 	/*!< Error occurred while starting the CAN peripheral */
 	UCAN_ERROR_CAN_NOTIFICATION = 0x0CU, 	/*!< Failed to activate CAN RX/TX/FIFO notifications */
+	UCAN_ERROR_UNKNOWN_ID		= 0x0DU		/*!< Provided ID does not match any known packet configuration */
 } UCAN_StatusTypeDef;
 
 
