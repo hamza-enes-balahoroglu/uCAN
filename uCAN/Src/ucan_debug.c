@@ -33,6 +33,7 @@
 
 
 #include "ucan_debug.h"
+#include "ucan_runtime.h"
 
 /**
   * @brief  Calculates the total Data Length Code (DLC) of a CAN packet.
@@ -124,21 +125,20 @@ UCAN_StatusTypeDef uCAN_Debug_CheckPacketConfig(UCAN_PacketConfig* configList, U
 }
 
 /**
- * @brief  Finalizes the internal packet representation by assigning pointer addresses
- *         for each byte of data according to its type (U8, U16, U32).
+ * @brief  Converts high-level packet configuration into finalized UCAN_Packet format.
  *
- * @note   This function is mainly used for debugging or simulation environments
- *         where actual byte-wise pointer mapping is required without real CAN transmission.
- *         It iterates through all configured packets, calculates their DLC,
- *         and fills the bits[] array with appropriate byte pointers.
+ * @note   Mainly used in debug or simulation contexts where byte-level pointer mapping
+ *         is needed without actual CAN hardware interaction. This function traverses all
+ *         configured packets, calculates their DLC, and fills the bits[] array with
+ *         byte pointers pointing to the actual data.
  *
- * @param  configPackets Pointer to array of UCAN_PacketConfig structs.
- * @param  packetHolder  Pointer to UCAN_PacketHolder struct that will be populated.
+ * @param  configPackets Pointer to array of UCAN_PacketConfig structures.
+ * @param  packetHolder  Pointer to a UCAN_PacketHolder that will be populated with finalized packets.
  *
- * @retval UCAN_StatusTypeDef Returns UCAN_OK on success.
+ * @retval UCAN_StatusTypeDef Returns UCAN_OK if the operation is successful, UCAN_INVALID_PARAM if input is NULL.
  *
- * @warning This function assumes both configPackets and packetHolder are properly initialized.
- *          No runtime safety checks (e.g. NULL pointers or overflow guards) are performed.
+ * @warning This function assumes packetHolder->count is already set and matches configPackets.
+ *          No boundary or overflow checks are performed beyond basic NULL checks.
  */
 UCAN_StatusTypeDef uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, UCAN_PacketHolder* packetHolder)
 {
@@ -148,7 +148,7 @@ UCAN_StatusTypeDef uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, U
 		return UCAN_INVALID_PARAM;
 	}
 
-    UCAN_Packet* packets = packetHolder->packets;
+    UCAN_Packet *packets = packetHolder->packets;
 
     // loop through each packet in the holder
     for (uint32_t i = 0; i < packetHolder->count; ++i) {
@@ -158,7 +158,7 @@ UCAN_StatusTypeDef uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, U
 
         // set packet ID and calculate DLC
         packets[i].id = configPackets[i].id;
-        packets[i].dlc = uCAN_Debug_Calculate_DLC(configPackets);
+        packets[i].dlc = uCAN_Debug_Calculate_DLC(&configPackets[i]);
 
         // go through each data item in this config
         while (j < configPackets[i].item_count) {
@@ -191,6 +191,10 @@ UCAN_StatusTypeDef uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, U
             j++;
         }
     }
+
+    qsort(packets, packetHolder->count, sizeof(UCAN_Packet), uCAN_Runtime_ComparePacketId);
+
+//    packetHolder->packets = packets;
 
     // All checks passed successfully
     return UCAN_OK;

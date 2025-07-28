@@ -2,6 +2,7 @@
 
 #include "ucan.h"
 #include "ucan_debug.h"
+#include "ucan_runtime.h"
 
 const CAN_FilterTypeDef defaultFilterConfig = {
     .FilterMode = CAN_FILTERMODE_IDMASK,
@@ -45,6 +46,7 @@ UCAN_StatusTypeDef uCAN_Start(UCAN_HandleTypeDef* ucan, UCAN_Config* config)
     	UCAN_StatusTypeDef txListCheck = uCAN_Debug_CheckPacketConfig(config->txPacketList, &ucan->txHolder);
     	UCAN_StatusTypeDef rxListCheck = uCAN_Debug_CheckPacketConfig(config->rxPacketList, &ucan->rxHolder);
 
+    	//TODO
     	if (txListCheck != UCAN_OK)
     	{
     		ucan->status = txListCheck;
@@ -106,7 +108,13 @@ UCAN_StatusTypeDef uCAN_SendAll(UCAN_HandleTypeDef* ucan)
 		return UCAN_NOT_INITIALIZED;
 	}
 
-	//TODO
+	for(uint32_t i = 0; i< ucan->txHolder.count;i++)
+	{
+		if(uCAN_Runtime_SendPacket(ucan->hcan, &ucan->txHolder.packets[i]) != UCAN_OK)
+		{
+			return UCAN_ERROR;
+		}
+	}
 
 	return UCAN_OK;
 }
@@ -124,7 +132,10 @@ UCAN_StatusTypeDef uCAN_Update(UCAN_HandleTypeDef* ucan)
 	}
 
 
-	//TODO
+	if(uCAN_Runtime_UpdatePacket(ucan) != UCAN_OK)
+	{
+		return UCAN_ERROR;
+	}
 
 	return UCAN_OK;
 }
