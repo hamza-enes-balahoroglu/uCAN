@@ -31,9 +31,9 @@
   ******************************************************************************
   */
 
-
-#include "ucan_debug.h"
+#include <stdlib.h>
 #include "ucan_runtime.h"
+#include "ucan_debug.h"
 
 /**
   * @brief  Calculates the total Data Length Code (DLC) of a CAN packet.
@@ -192,9 +192,9 @@ UCAN_StatusTypeDef uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, U
         }
     }
 
-    qsort(packets, packetHolder->count, sizeof(UCAN_Packet), uCAN_Runtime_ComparePacketId);
 
-//    packetHolder->packets = packets;
+    qsort(packetHolder->packets, packetHolder->count, sizeof(UCAN_Packet), uCAN_Runtime_ComparePacketId);
+
 
     // All checks passed successfully
     return UCAN_OK;
