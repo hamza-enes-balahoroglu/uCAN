@@ -131,10 +131,11 @@ UCAN_StatusTypeDef uCAN_Update(UCAN_HandleTypeDef* ucan)
 		return UCAN_NOT_INITIALIZED;
 	}
 
-
-	if(uCAN_Runtime_UpdatePacket(ucan) != UCAN_OK)
+	UCAN_StatusTypeDef ret = uCAN_Runtime_UpdatePacket(ucan);
+	if(ret != UCAN_OK)
 	{
-		return UCAN_ERROR;
+		ucan->status = ret;
+		return ret;
 	}
 
 	return UCAN_OK;
