@@ -36,7 +36,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define txPacketCount 2
+#define txPacketCount 3
 #define rxPacketCount 2
 /* USER CODE END PM */
 
@@ -53,10 +53,10 @@ uint32_t clients[3] = { 0x100U, 0x200U, 0x300U };
 uint8_t byte1;
 uint8_t byte1_2;
 uint16_t byte2;
-uint32_t byte4 = 0;
+uint32_t byte4;
 uint8_t byte1_3;
 uint16_t byte2_3;
-uint32_t byte4_3 = 0;
+uint32_t byte4_3;
 
 /* USER CODE END PV */
 
@@ -113,7 +113,9 @@ int main(void) {
 	while (1) {
 		byte4_3++;
 		byte1_3++;
-		HAL_Delay(100);
+		byte4++;
+		HAL_Delay(50);
+		uCAN_SendAll(&ucan1);
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -220,16 +222,13 @@ static void MX_GPIO_Init(void) {
 /* USER CODE BEGIN 4 */
 static void UCAN1_Init(void) {
 	ucan1.hcan = &hcan1;
-
 	ucan1.node.masterId = 0x000;
 	ucan1.node.selfId = 0x000;
 	ucan1.node.role = UCAN_ROLE_MASTER;
 	ucan1.node.clientIdList = clients;
 	ucan1.node.clientCount = UCAN_CLIENT_COUNT(clients);
-
 	ucan1.txHolder.packets = txpackets;
 	ucan1.txHolder.count = UCAN_PACKET_COUNT(txpackets);
-
 	ucan1.rxHolder.packets = rxpackets;
 	ucan1.rxHolder.count = UCAN_PACKET_COUNT(rxpackets);
 
@@ -241,28 +240,37 @@ static void UCAN1_Init(void) {
 static void UCAN1_Config(void) {
 
 	UCAN_PacketConfig txConfigPacket[txPacketCount] = {
-			{ .id = 0x240U, .item_count = 4,
+			{ .id = 0x245U, .item_count = 2,
 					.items = {
-					{.type = UCAN_U8, .ptr = &byte1 },
-					{.type = UCAN_U16, .ptr = &byte2 },
+					//{.type = UCAN_U32, .ptr = &byte4 },
+					//{.type = UCAN_U16, .ptr = &byte2 },
 					{ .type = UCAN_U32, .ptr = &byte4 },
 					{ .type = UCAN_U8, .ptr = &byte1_2 },
 			}
 
 			},
+
 			{ .id = 0x250U, .item_count = 2,
 					.items = {
-					{ .type = UCAN_U8, .ptr = &byte1_3 },
-					//{.type = UCAN_U16, .ptr = &byte2},
-					{ .type = UCAN_U32, .ptr = &byte4_3 },
-					//{.type = UCAN_U8,  .ptr = &byte1_2},
+							{ .type = UCAN_U8, .ptr = &byte1_3 },
+							//{.type = UCAN_U16, .ptr = &byte2},
+							{ .type = UCAN_U32, .ptr = &byte4_3 },
+							//{.type = UCAN_U8,  .ptr = &byte1_2},
 			}
 
+			},
+
+			{ .id = 0x240U, .item_count = 3,
+					.items = {
+							{ .type = UCAN_U32, .ptr = &byte4},
+							{ .type = UCAN_U8,  .ptr = &byte1},
+							{ .type = UCAN_U8,  .ptr = &byte1_2},
+					}
 			},
 	};
 
 	UCAN_PacketConfig rxConfigPacket[rxPacketCount] = {
-			{ .id = 0x230U, .item_count = 3,
+			{ .id = 0x360U, .item_count = 3,
 					.items = {
 							{ .type = UCAN_U8, .ptr = &byte1_2 },
 							{ .type = UCAN_U16, .ptr = &byte2 },
@@ -271,13 +279,15 @@ static void UCAN1_Config(void) {
 
 			},
 
-			{ .id = 0x210U, .item_count = 2,
+			{ .id = 0x350U, .item_count = 2,
 					.items = {
 							{ .type = UCAN_U32, .ptr = &byte4 },
 							//{.type = UCAN_U16, .ptr = &byte2},
 							{ .type = UCAN_U32, .ptr = &byte4_3 },
 							//{.type = UCAN_U8,  .ptr = &byte1_2},
-					} }, };
+					}
+			},
+	};
 
 	UCAN_Config ucanConfig;
 
