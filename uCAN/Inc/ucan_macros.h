@@ -21,7 +21,7 @@
   *	  				  _   _| |       /  \  |  \| |
   *	  				 | | | | |      / /\ \ | . ` |
   *	  				 | |_| | |____ / ____ \| |\  |
-  *	  				  \__,_|\_____/_/    \_\_| \_|
+  *	  				  \____|\_____/_/    \_\_| \_|
   *
   ******************************************************************************
   */
@@ -30,6 +30,53 @@
 #define UCAN_MACROS
 
 #include "ucan_types.h"
+
+
+#define UCAN_HANDSHAKE_REQUEST_VALUE   	0xA5U 	// Master tarafından gönderilen ping
+#define UCAN_HANDSHAKE_RESPONSE_VALUE  	0x5AU	// Client tarafından dönülen cevap
+
+#define UCAN_HANDSHAKE_INTERVAL_MS    	500  	// Master ping atma aralığı
+#define UCAN_HANDSHAKE_TIMEOUT_MS     	700 	// 200 ms tolerans ekledik
+#define UCAN_HANDSHAKE_LOST_MS       	2000  	// 2 saniye içinde hâlâ yoksa lost
+
+
+#define UCAN_HANDSHAKE_TICK_DIFF(sentTick, responseTick) \
+    (((sentTick) <= (responseTick)) ? ((responseTick) - (sentTick)) : (UINT32_MAX - (responseTick) + (sentTick) + 1U))
+
+#define UCAN_HANDSHAKE_IS_TIMEOUT(sentTick, responseTick) \
+    (UCAN_HANDSHAKE_TICK_DIFF((sentTick), (responseTick)) > UCAN_HANDSHAKE_TIMEOUT_MS && \
+     UCAN_HANDSHAKE_TICK_DIFF((sentTick), (responseTick)) < UCAN_HANDSHAKE_LOST_MS)
+
+#define UCAN_HANDSHAKE_IS_LOST(sentTick, responseTick) \
+    (UCAN_HANDSHAKE_TICK_DIFF((sentTick), (responseTick)) >= UCAN_HANDSHAKE_LOST_MS)
+
+#define UCAN_CHECK_READY(ucan)                              		\
+    do {                                                      		\
+        if ((ucan) == NULL) {                 						\
+            return UCAN_INVALID_PARAM;                      		\
+        }                                                   		\
+        if ((ucan)->status == UCAN_NOT_INITIALIZED) {       		\
+            return UCAN_NOT_INITIALIZED;                   			\
+        }                                                        	\
+        if ((ucan)->status == UCAN_ERROR) {                 		\
+            return UCAN_ERROR;                              		\
+        }															\
+        if ((ucan)->status == UCAN_ERROR_DUPLICATE_ID) {          	\
+            return UCAN_ERROR_DUPLICATE_ID;                        	\
+        }															\
+        if ((ucan)->status == UCAN_ERROR_FILTER_CONFIG) {          	\
+            return UCAN_ERROR_FILTER_CONFIG;                       	\
+        }															\
+		if ((ucan)->status == UCAN_ERROR_CAN_START) {             	\
+            return UCAN_ERROR_CAN_START;                           	\
+        }															\
+		if ((ucan)->status == UCAN_ERROR_CAN_NOTIFICATION) {		\
+            return UCAN_ERROR_CAN_NOTIFICATION;                    	\
+        }															\
+		if ((ucan)->status == UCAN_MISSING_VAL) {					\
+            return UCAN_MISSING_VAL;                    			\
+        }															\
+    } while (0)
 
 /**
   * @brief  Calculates the number of packets in a static UCAN_PacketConfig list.
@@ -83,7 +130,7 @@
 							((STATUS) == UCAN_TIMEOUT) || \
 							((STATUS) == UCAN_INVALID_PARAM) || \
 							((STATUS) == UCAN_BUSY) || \
-							((STATUS) == UCAN_DUPLICATE_ID) || \
+							((STATUS) == UCAN_ERROR_DUPLICATE_ID) || \
 							((STATUS) == UCAN_ERROR_FILTER_CONFIG) || \
 							((STATUS) == UCAN_ERROR_CAN_START) || \
 							((STATUS) == UCAN_ERROR_CAN_NOTIFICATION))

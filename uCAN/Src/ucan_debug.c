@@ -26,7 +26,7 @@
   *	  				  _   _| |       /  \  |  \| |
   *	  				 | | | | |      / /\ \ | . ` |
   *	  				 | |_| | |____ / ____ \| |\  |
-  *	  				  \__,_|\_____/_/    \_\_| \_|
+  *	  				  \____|\_____/_/    \_\_| \_|
   *
   ******************************************************************************
   */
@@ -206,7 +206,7 @@ UCAN_StatusTypeDef uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, U
  * @param  node Pointer to the UCAN_NodeInfo to validate.
  * @retval UCAN_OK if validation passes.
  * @retval UCAN_INVALID_PARAM if node or clientIdList pointer is NULL.
- * @retval UCAN_DUPLICATE_ID if duplicate client IDs are detected.
+ * @retval UCAN_ERROR_DUPLICATE_ID if duplicate client IDs are detected.
  *
  * @note   Checks that the node role is valid via assert_param.
  *         Also scans clientIdList for duplicate IDs to prevent address conflicts on the CAN bus.
@@ -214,7 +214,7 @@ UCAN_StatusTypeDef uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, U
 UCAN_StatusTypeDef uCAN_Debug_CheckNodeInfo(UCAN_NodeInfo* node)
 {
 	// Null pointer check to prevent invalid memory access
-    if (node == NULL || node->clientIdList == NULL) {
+    if (node == NULL || node->clients == NULL) {
         return UCAN_INVALID_PARAM;
     }
 
@@ -227,9 +227,9 @@ UCAN_StatusTypeDef uCAN_Debug_CheckNodeInfo(UCAN_NodeInfo* node)
         for (uint32_t innerIndex = outerIndex + 1; innerIndex < node->clientCount; innerIndex++)
         {
             // If duplicate ID found, return error code
-            if (node->clientIdList[outerIndex] == node->clientIdList[innerIndex])
+            if (node->clients[outerIndex].id == node->clients[innerIndex].id)
             {
-                return UCAN_DUPLICATE_ID;
+                return UCAN_ERROR_DUPLICATE_ID;
             }
         }
     }
@@ -238,6 +238,17 @@ UCAN_StatusTypeDef uCAN_Debug_CheckNodeInfo(UCAN_NodeInfo* node)
     return UCAN_OK;
 }
 
+UCAN_StatusTypeDef uCAN_Debug_FinalizeNodeInfo(UCAN_NodeInfo* node)
+{
+	// Null pointer check to prevent invalid memory access
+    if (node == NULL || node->clients == NULL) {
+        return UCAN_INVALID_PARAM;
+    }
+
+    qsort(node->clients, node->clientCount, sizeof(UCAN_Client), uCAN_Runtime_CompareClientId);
+
+    return UCAN_OK;
+}
 
 /**
  * @brief  Validates that each item in the packet has a valid data type.
@@ -330,7 +341,7 @@ UCAN_StatusTypeDef uCAN_Debug_CheckUniquePackets(UCAN_HandleTypeDef* ucan)
   * @param  txHolder: Pointer to the TX packet holder structure.
   * @param  rxHolder: Pointer to the RX packet holder structure.
   * @retval UCAN_OK if the ID is unique,
-  *         UCAN_DUPLICATE_ID if the ID appears more than once.
+  *         UCAN_ERROR_DUPLICATE_ID if the ID appears more than once.
   */
 UCAN_StatusTypeDef uCAN_Debug_CheckUniqueID(uint32_t id, UCAN_PacketHolder* txHolder, UCAN_PacketHolder* rxHolder)
 {
@@ -356,7 +367,7 @@ UCAN_StatusTypeDef uCAN_Debug_CheckUniqueID(uint32_t id, UCAN_PacketHolder* txHo
 
     // If ID appears more than once, return duplicate error
     if (idCounter > 1) {
-    	return UCAN_DUPLICATE_ID;
+    	return UCAN_ERROR_DUPLICATE_ID;
     }
 
     // Otherwise, the ID is unique

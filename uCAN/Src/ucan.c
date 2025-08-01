@@ -4,7 +4,7 @@
 #include "ucan_debug.h"
 #include "ucan_runtime.h"
 
-const CAN_FilterTypeDef defaultFilterConfig = {
+static const CAN_FilterTypeDef defaultFilterConfig = {
     .FilterMode = CAN_FILTERMODE_IDMASK,
     .FilterFIFOAssignment = CAN_FILTER_FIFO0,
     .FilterIdHigh = 0x0000,
@@ -17,7 +17,7 @@ const CAN_FilterTypeDef defaultFilterConfig = {
 
 UCAN_StatusTypeDef uCAN_Init(UCAN_HandleTypeDef* ucan)
 {
-	if(ucan == NULL || ucan->hcan == NULL)
+	if(ucan == NULL || ucan->hcan == NULL || ucan->node.clients == NULL)
 	{
 		return UCAN_INVALID_PARAM;
 	}
@@ -28,85 +28,66 @@ UCAN_StatusTypeDef uCAN_Init(UCAN_HandleTypeDef* ucan)
 	}
 
 
-
 	ucan->status = UCAN_OK;
 	return UCAN_OK;
 }
 
 UCAN_StatusTypeDef uCAN_Start(UCAN_HandleTypeDef* ucan, UCAN_Config* config)
 {
-	if(ucan == NULL || config == NULL)
+	UCAN_CHECK_READY(ucan);
+
+
+	UCAN_StatusTypeDef txListCheck = uCAN_Debug_CheckPacketConfig(config->txPacketList, &ucan->txHolder);
+	UCAN_StatusTypeDef rxListCheck = uCAN_Debug_CheckPacketConfig(config->rxPacketList, &ucan->rxHolder);
+
+	if (txListCheck != UCAN_OK)
 	{
-		return UCAN_INVALID_PARAM;
+		ucan->status = txListCheck;
+		return txListCheck;
 	}
 
-    if(ucan->status == UCAN_OK)
-    {
-
-    	UCAN_StatusTypeDef txListCheck = uCAN_Debug_CheckPacketConfig(config->txPacketList, &ucan->txHolder);
-    	UCAN_StatusTypeDef rxListCheck = uCAN_Debug_CheckPacketConfig(config->rxPacketList, &ucan->rxHolder);
-
-    	//TODO
-    	if (txListCheck != UCAN_OK)
-    	{
-    		ucan->status = txListCheck;
-    		return txListCheck;
-    	}
-
-    	if (rxListCheck != UCAN_OK)
-    	{
-    		ucan->status = rxListCheck;
-    		return rxListCheck;
-    	}
-
-    	uCAN_Debug_FinalizePacket(config->txPacketList, &ucan->txHolder);
-
-    	uCAN_Debug_FinalizePacket(config->rxPacketList, &ucan->rxHolder);
-
-    	if(uCAN_Debug_CheckUniquePackets(ucan) != UCAN_OK)
-    	{
-    		ucan->status = UCAN_DUPLICATE_ID;
-    		return UCAN_DUPLICATE_ID;
-    	}
-
-
-    	if (HAL_CAN_ConfigFilter(ucan->hcan, &ucan->filter) != HAL_OK)
-    	{
-    		ucan->status = UCAN_ERROR_FILTER_CONFIG;
-    		return UCAN_ERROR_FILTER_CONFIG;
-    	}
-
-    	if (HAL_CAN_Start(ucan->hcan) != HAL_OK)
-    	{
-    		ucan->status = UCAN_ERROR_CAN_START;
-    		return UCAN_ERROR_CAN_START;
-    	}
-
-    	if (HAL_CAN_ActivateNotification(ucan->hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
-    	{
-    		ucan->status = UCAN_ERROR_CAN_NOTIFICATION;
-    		return UCAN_ERROR_CAN_NOTIFICATION;
-    	}
-    }
-	else
+	if (rxListCheck != UCAN_OK)
 	{
-		return ucan->status;
+		ucan->status = rxListCheck;
+		return rxListCheck;
 	}
+
+	uCAN_Debug_FinalizePacket(config->txPacketList, &ucan->txHolder);
+
+	uCAN_Debug_FinalizePacket(config->rxPacketList, &ucan->rxHolder);
+
+	if(uCAN_Debug_CheckUniquePackets(ucan) != UCAN_OK)
+	{
+		ucan->status = UCAN_ERROR_DUPLICATE_ID;
+		return UCAN_ERROR_DUPLICATE_ID;
+	}
+
+
+	if (HAL_CAN_ConfigFilter(ucan->hcan, &ucan->filter) != HAL_OK)
+	{
+		ucan->status = UCAN_ERROR_FILTER_CONFIG;
+		return UCAN_ERROR_FILTER_CONFIG;
+	}
+
+	if (HAL_CAN_Start(ucan->hcan) != HAL_OK)
+	{
+		ucan->status = UCAN_ERROR_CAN_START;
+		return UCAN_ERROR_CAN_START;
+	}
+
+	if (HAL_CAN_ActivateNotification(ucan->hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK)
+	{
+		ucan->status = UCAN_ERROR_CAN_NOTIFICATION;
+		return UCAN_ERROR_CAN_NOTIFICATION;
+	}
+
 
 	return UCAN_OK;
 }
 
 UCAN_StatusTypeDef uCAN_SendAll(UCAN_HandleTypeDef* ucan)
 {
-	if(ucan == NULL)
-	{
-		return UCAN_INVALID_PARAM;
-	}
-
-	if(ucan->status == UCAN_NOT_INITIALIZED)
-	{
-		return UCAN_NOT_INITIALIZED;
-	}
+	UCAN_CHECK_READY(ucan);
 
 	for(uint32_t i = 0; i< ucan->txHolder.count;i++)
 	{
@@ -116,44 +97,77 @@ UCAN_StatusTypeDef uCAN_SendAll(UCAN_HandleTypeDef* ucan)
 		}
 	}
 
+	uCAN_Runtime_SendPing(ucan->hcan, &ucan->node);
+
 	return UCAN_OK;
 }
 
 UCAN_StatusTypeDef uCAN_Update(UCAN_HandleTypeDef* ucan)
 {
-	if(ucan == NULL)
+	UCAN_CHECK_READY(ucan);
+
+	CAN_RxHeaderTypeDef rxHeader;
+	uint8_t data[8];
+
+	if(HAL_CAN_GetRxMessage(ucan->hcan, CAN_RX_FIFO0, &rxHeader, data) != HAL_OK)
 	{
-		return UCAN_INVALID_PARAM;
+		return UCAN_ERROR;
 	}
 
-	if(ucan->status == UCAN_NOT_INITIALIZED)
+	UCAN_StatusTypeDef packetStatus = uCAN_Runtime_UpdatePacket(&ucan->rxHolder, rxHeader.StdId, data);
+
+	// eğer bilinmeyen paketse, belki handshake'tir diyip oraya gönderelim
+	if (packetStatus == UCAN_ERROR_UNKNOWN_ID)
 	{
-		return UCAN_NOT_INITIALIZED;
+	    UCAN_StatusTypeDef handshakeStatus = uCAN_Runtime_UpdateHandshake(&ucan->node, ucan->hcan, rxHeader.StdId, data);
+
+	    if (handshakeStatus != UCAN_OK)
+	    {
+	        return handshakeStatus; // handshake de çözemedi, sıkıntı var
+	    }
+	}
+	else if (packetStatus != UCAN_OK)
+	{
+	    return packetStatus; // bilinen paketti ama hata çıktı
 	}
 
-	UCAN_StatusTypeDef ret = uCAN_Runtime_UpdatePacket(ucan);
-	if(ret != UCAN_OK)
-	{
-		ucan->status = ret;
-		return ret;
-	}
-
+	// eğer buraya kadar geldiyse her şey yolunda
 	return UCAN_OK;
 }
 
 UCAN_StatusTypeDef uCAN_Handshake(UCAN_HandleTypeDef* ucan)
 {
-	if(ucan == NULL)
+	UCAN_CHECK_READY(ucan);
+
+	UCAN_StatusTypeDef connectionErrorFlag = UCAN_OK;
+
+	for(uint32_t i = 0; i < ucan->node.clientCount; i++)
 	{
-		return UCAN_INVALID_PARAM;
+	    if (ucan->node.clients[i].responseTick == 0)
+	    {
+	    	connectionErrorFlag = UCAN_ERROR;
+	        continue;
+	    }
+
+	    UCAN_ConnectionStatusTypeDef status;
+
+	    if (UCAN_HANDSHAKE_IS_TIMEOUT(ucan->node.sentTick, ucan->node.clients[i].responseTick))
+	    {
+	        status = UCAN_CONN_TIMEOUT;
+	        connectionErrorFlag = UCAN_ERROR;
+	    }
+	    else if (UCAN_HANDSHAKE_IS_LOST(ucan->node.sentTick, ucan->node.clients[i].responseTick))
+	    {
+	        status = UCAN_CONN_LOST;
+	        connectionErrorFlag = UCAN_ERROR;
+	    }
+	    else
+	    {
+	        status = UCAN_CONN_ACTIVE;
+	    }
+
+	    ucan->node.clients[i].status = status;
 	}
 
-	if(ucan->status == UCAN_NOT_INITIALIZED)
-	{
-		return UCAN_NOT_INITIALIZED;
-	}
-
-	//TODO
-
-	return UCAN_OK;
+	return connectionErrorFlag;
 }

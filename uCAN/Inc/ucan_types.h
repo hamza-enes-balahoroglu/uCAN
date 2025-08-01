@@ -17,7 +17,7 @@
   *	  				  _   _| |       /  \  |  \| |
   *	  				 | | | | |      / /\ \ | . ` |
   *	  				 | |_| | |____ / ____ \| |\  |
-  *	  				  \__,_|\_____/_/    \_\_| \_|
+  *	  				  \____|\_____/_/    \_\_| \_|
   *
   ******************************************************************************
   */
@@ -63,7 +63,7 @@ typedef enum {
     UCAN_TIMEOUT          		= 0x06U,	/*!< Operation timed out */
     UCAN_INVALID_PARAM    		= 0x07U,	/*!< Invalid parameter passed to function */
     UCAN_BUSY             		= 0x08U,  	/*!< CAN bus is busy, try again later */
-	UCAN_DUPLICATE_ID			= 0x09U,	/*!< Duplicate ID detected in client or packet list */
+	UCAN_ERROR_DUPLICATE_ID		= 0x09U,	/*!< Duplicate ID detected in client or packet list */
 	UCAN_ERROR_FILTER_CONFIG    = 0x0AU, 	/*!< Failed to configure CAN filter settings */
 	UCAN_ERROR_CAN_START        = 0x0BU, 	/*!< Error occurred while starting the CAN peripheral */
 	UCAN_ERROR_CAN_NOTIFICATION = 0x0CU, 	/*!< Failed to activate CAN RX/TX/FIFO notifications */
@@ -76,9 +76,9 @@ typedef enum {
   * @note   Indicates the state of a node’s connection on the CAN bus.
   */
 typedef enum {
-    UCAN_CONN_ACTIVE    	= 0x00U, 	/*!< Connection is active and communication is ongoing */
-    UCAN_CONN_LOST      	= 0x01U, 	/*!< Connection was previously active but is now lost */
-    UCAN_CONN_WAITING   	= 0x02U, 	/*!< Waiting for response, e.g., after handshake request */
+	UCAN_CONN_WAITING    	= 0x00U, 	/*!< Waiting for response, e.g., after handshake request */
+	UCAN_CONN_ACTIVE       	= 0x01U, 	/*!< Connection is active and communication is ongoing */
+	UCAN_CONN_LOST   		= 0x02U, 	/*!< Connection was previously active but is now lost */
     UCAN_CONN_TIMEOUT   	= 0x03U  	/*!< No response received within the expected timeframe */
 } UCAN_ConnectionStatusTypeDef;
 
@@ -126,6 +126,16 @@ typedef struct {
 } UCAN_PacketHolder;
 
 /**
+  * @brief  Represents a single client node in the CAN network.
+  * @note   Stores the unique ID and current connection status of the client.
+  */
+typedef struct {
+    uint32_t id;   						 /*!< Unique identifier for a specific client node */
+    uint32_t responseTick; 				 // in ms
+    UCAN_ConnectionStatusTypeDef status; /*!< Connection status for this client node */
+} UCAN_Client;
+
+/**
   * @brief  Structure containing information about a CAN node and its network clients.
   * @note   Manages node role, identifiers, and connection statuses of connected clients.
   */
@@ -133,9 +143,9 @@ typedef struct {
     UCAN_NodeRole role;      			/*!< Role of this node on the CAN bus (Master, Client, None) */
     uint32_t selfId;                    /*!< CAN identifier assigned to this node */
     uint32_t masterId;                  /*!< CAN identifier of the master node */
-    uint32_t* clientIdList;             /*!< Pointer to an array of client node IDs */
+    uint32_t sentTick;
+    UCAN_Client* clients;				/*!< Pointer to array of known clients in the network */
     uint32_t clientCount;               /*!< Number of clients in the clientIdList array */
-    UCAN_ConnectionStatusTypeDef* clientConnectionStatus; /*!< Pointer to array holding connection status for each client */
 } UCAN_NodeInfo;
 
 
