@@ -33,9 +33,9 @@
   *                          _____          _   _
   *                         / ____|   /\   | \ | |
   *	  				  _   _| |       /  \  |  \| |
-  *	  				 | | | | |      / /\ \ | . ` |
-  *	  				 | |_| | |____ / ____ \| |\  |
-  *	  				  \____|\_____/_/    \_\_| \_|
+  *                  | | | | |      / /\ \ | . ` |
+  *                  | |_| | |____ / ____ \| |\  |
+  *                   \____|\_____/_/    \_\_| \_|
   *
   ******************************************************************************
   */
@@ -118,13 +118,13 @@
         if ((ucan)->status == UCAN_ERROR_FILTER_CONFIG) {           \
             return UCAN_ERROR_FILTER_CONFIG;                        \
         }                                                           \
-		if ((ucan)->status == UCAN_ERROR_CAN_START) {               \
+        if ((ucan)->status == UCAN_ERROR_CAN_START) {               \
             return UCAN_ERROR_CAN_START;                            \
         }                                                           \
-		if ((ucan)->status == UCAN_ERROR_CAN_NOTIFICATION) {        \
+        if ((ucan)->status == UCAN_ERROR_CAN_NOTIFICATION) {        \
             return UCAN_ERROR_CAN_NOTIFICATION;                     \
         }                                                           \
-		if ((ucan)->status == UCAN_MISSING_VAL) {                   \
+        if ((ucan)->status == UCAN_MISSING_VAL) {                   \
             return UCAN_MISSING_VAL;                                \
         }                                                           \
     } while (0)
@@ -172,20 +172,19 @@
   * @retval 1 if valid, 0 otherwise.
   */
 #define IS_UCAN_STATUS_TYPE_DEF(STATUS) ( \
-							((STATUS) == UCAN_NOT_INITIALIZED) || \
-							((STATUS) == UCAN_OK) || \
-							((STATUS) == UCAN_ERROR) || \
-							((STATUS) == UCAN_MISSING_VAL) || \
-							((STATUS) == UCAN_NO_CONNECTION) || \
-							((STATUS) == UCAN_NO_CHANGED_VAL) || \
-							((STATUS) == UCAN_TIMEOUT) || \
-							((STATUS) == UCAN_INVALID_PARAM) || \
-							((STATUS) == UCAN_BUSY) || \
-							((STATUS) == UCAN_ERROR_DUPLICATE_ID) || \
-							((STATUS) == UCAN_ERROR_FILTER_CONFIG) || \
-							((STATUS) == UCAN_ERROR_CAN_START) || \
-							((STATUS) == UCAN_ERROR_CAN_NOTIFICATION))
-
+						((STATUS) == UCAN_NOT_INITIALIZED) || \
+						((STATUS) == UCAN_OK) || \
+						((STATUS) == UCAN_ERROR) || \
+						((STATUS) == UCAN_MISSING_VAL) || \
+						((STATUS) == UCAN_NO_CONNECTION) || \
+						((STATUS) == UCAN_NO_CHANGED_VAL) || \
+						((STATUS) == UCAN_TIMEOUT) || \
+						((STATUS) == UCAN_INVALID_PARAM) || \
+						((STATUS) == UCAN_BUSY) || \
+						((STATUS) == UCAN_ERROR_DUPLICATE_ID) || \
+						((STATUS) == UCAN_ERROR_FILTER_CONFIG) || \
+						((STATUS) == UCAN_ERROR_CAN_START) || \
+						((STATUS) == UCAN_ERROR_CAN_NOTIFICATION))
 
 /**
   * @brief  Checks if the given type is a valid UCAN data type.

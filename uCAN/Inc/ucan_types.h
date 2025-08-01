@@ -15,9 +15,9 @@
   *                          _____          _   _
   *                         / ____|   /\   | \ | |
   *	  				  _   _| |       /  \  |  \| |
-  *	  				 | | | | |      / /\ \ | . ` |
-  *	  				 | |_| | |____ / ____ \| |\  |
-  *	  				  \____|\_____/_/    \_\_| \_|
+  *                  | | | | |      / /\ \ | . ` |
+  *                  | |_| | |____ / ____ \| |\  |
+  *                   \____|\_____/_/    \_\_| \_|
   *
   ******************************************************************************
   */
@@ -44,7 +44,7 @@ typedef enum {
 typedef enum {
     UCAN_ROLE_MASTER, 						/*!< Node initiates communication and manages handshakes */
     UCAN_ROLE_CLIENT,						/*!< Node responds to master's messages and sends periodic data */
-    UCAN_ROLE_NONE    						/*!< Role not assigned or inactive node */
+    UCAN_ROLE_NONE							/*!< Role not assigned or inactive node */
 } UCAN_NodeRole;
 
 
@@ -63,9 +63,9 @@ typedef enum {
     UCAN_INVALID_PARAM    		= 0x07U,	/*!< Invalid parameter passed to function */
     UCAN_BUSY             		= 0x08U,  	/*!< CAN bus is busy, try again later */
     UCAN_ERROR_DUPLICATE_ID		= 0x09U,	/*!< Duplicate ID detected in client or packet list */
-    UCAN_ERROR_FILTER_CONFIG    = 0x0AU, 	/*!< Failed to configure CAN filter settings */
-    UCAN_ERROR_CAN_START        = 0x0BU, 	/*!< Error occurred while starting the CAN peripheral */
-    UCAN_ERROR_CAN_NOTIFICATION = 0x0CU, 	/*!< Failed to activate CAN RX/TX/FIFO notifications */
+    UCAN_ERROR_FILTER_CONFIG	= 0x0AU, 	/*!< Failed to configure CAN filter settings */
+    UCAN_ERROR_CAN_START		= 0x0BU, 	/*!< Error occurred while starting the CAN peripheral */
+    UCAN_ERROR_CAN_NOTIFICATION	= 0x0CU, 	/*!< Failed to activate CAN RX/TX/FIFO notifications */
     UCAN_ERROR_UNKNOWN_ID		= 0x0DU		/*!< Provided ID does not match any known packet configuration */
 } UCAN_StatusTypeDef;
 
@@ -131,7 +131,7 @@ typedef struct {
 typedef struct {
     uint32_t id;                		 	/*!< Unique identifier for a specific client node */
     uint32_t responseTick;      		 	/*!< Timestamp (in ms) of the last received response from the client */
-    UCAN_ConnectionStatusTypeDef status; 	/*!< Current connection status of the client node */
+    UCAN_ConnectionStatusTypeDef status;	/*!< Current connection status of the client node */
 } UCAN_Client;
 
 /**
