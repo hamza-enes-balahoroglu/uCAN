@@ -2,28 +2,27 @@
   ******************************************************************************
   * @file    ucan_debug.c
   * @author  Hamza Enes Balahoroğlu
-  * @brief   Debug and validation utilities for the uCAN communication module.
+  * @brief   [INTERNAL] Debug and validation utilities for the UCAN communication module.
   *
-  * This file contains internal functions that verify configuration consistency,
-  * detect logical errors, and validate runtime parameters in the uCAN module.
+  * This file holds core internal functions responsible for validating
+  * UCAN configurations, detecting logical errors, and verifying runtime parameters.
   *
-  * Core functionalities include:
-  * - Checking for null pointers and invalid parameters.
-  * - Ensuring that client IDs and packet IDs are unique.
-  * - Validating packet item types and DLC calculations.
-  * - Asserting the integrity of UCAN_HandleTypeDef before operation.
+  * Main features:
+  * - Null pointer and invalid parameter checks to prevent crashes.
+  * - Duplicate ID detection for clients and packets to avoid CAN bus conflicts.
+  * - Packet item type validation and Data Length Code (DLC) computation.
+  * - Structural integrity checks of UCAN_HandleTypeDef prior to operation.
   *
-  * These checks are designed to be used during development, testing, or
-  * system bring-up phases. They help catch misconfigurations or API misuse
-  * early in the application lifecycle.
+  * These functions are intended for development and testing phases to catch
+  * misconfigurations and misuse early. Not optimized for runtime performance.
+  * It’s recommended to disable or strip these in production builds.
   *
-  * @note    These functions are not optimized for runtime efficiency and
-  *          should be disabled or removed in production builds if not required.
+  * @note    All functions here are marked as [INTERNAL] and not exposed publicly.
   *
   *
-  *	  						 _____          _   _
-  *	  						/ ____|   /\   | \ | |
-  *	  				  _   _| |       /  \  |  \| |
+  *                          _____          _   _
+  *                         / ____|   /\   | \ | |
+  *                        | |       /  \  |  \| |
   *	  				 | | | | |      / /\ \ | . ` |
   *	  				 | |_| | |____ / ____ \| |\  |
   *	  				  \____|\_____/_/    \_\_| \_|
@@ -36,37 +35,41 @@
 #include "ucan_debug.h"
 
 /**
-  * @brief  Calculates the total Data Length Code (DLC) of a CAN packet.
-  * @note   Loops through each item in the packet and adds its byte size
-  *         to compute total data size for the CAN frame.
-  *         - UCAN_U8   → 1 byte
-  *         - UCAN_U16  → 2 bytes
-  *         - UCAN_U32  → 4 bytes
+  * @brief [INTERNAL] Calculate total Data Length Code (DLC) for a CAN packet config.
   *
-  * @param  pkt: Pointer to a UCAN_PacketConfig structure.
-  * @retval uint8_t: Computed DLC value (total number of bytes).
+  * This function iterates through all data items in the provided UCAN_PacketConfig,
+  * summing the byte size of each item according to its type. The total DLC represents
+  * the complete payload size of the CAN frame.
+  *
+  * The function supports these types with corresponding byte sizes:
+  * - UCAN_U8  : 1 byte
+  * - UCAN_U16 : 2 bytes
+  * - UCAN_U32 : 4 bytes
+  *
+  * If an unknown or unsupported type is encountered, it is skipped silently.
+  *
+  * @param pkt Pointer to the UCAN_PacketConfig structure to calculate DLC for.
+  * @retval uint8_t Total DLC value (number of bytes).
   */
 uint8_t uCAN_Debug_Calculate_DLC(UCAN_PacketConfig* pkt)
 {
     uint8_t dlc = 0;
 
-    // iterate through each data item in the packet
+    // loop through all items to accumulate byte sizes
     for (int i = 0; i < pkt->item_count; i++) {
         switch (pkt->items[i].type) {
             case UCAN_U8:
-                dlc += 1;  // 8-bit data → 1 byte
+                dlc += 1;  // add 1 byte for 8-bit data
                 break;
-
             case UCAN_U16:
-                dlc += 2;  // 16-bit data → 2 bytes
+                dlc += 2;  // add 2 bytes for 16-bit data
                 break;
-
             case UCAN_U32:
-                dlc += 4;  // 32-bit data → 4 bytes
+                dlc += 4;  // add 4 bytes for 32-bit data
                 break;
-
             default:
-                break;  // if type is invalid or unknown, skip it
+                // unknown type, ignore safely
+                break;
         }
     }
 
@@ -74,7 +77,7 @@ uint8_t uCAN_Debug_Calculate_DLC(UCAN_PacketConfig* pkt)
 }
 
 /**
-  * @brief  Validates the integrity of a given packet configuration list.
+  * @brief  [INTERNAL] Validates the integrity of a given packet configuration list.
   * @note   This function checks if the config list is non-null and has valid entries.
   *         For each packet:
   *           - Ensures pointer is valid
@@ -125,21 +128,24 @@ UCAN_StatusTypeDef uCAN_Debug_CheckPacketConfig(UCAN_PacketConfig* configList, U
 }
 
 /**
- * @brief  Converts high-level packet configuration into finalized UCAN_Packet format.
- *
- * @note   Mainly used in debug or simulation contexts where byte-level pointer mapping
- *         is needed without actual CAN hardware interaction. This function traverses all
- *         configured packets, calculates their DLC, and fills the bits[] array with
- *         byte pointers pointing to the actual data.
- *
- * @param  configPackets Pointer to array of UCAN_PacketConfig structures.
- * @param  packetHolder  Pointer to a UCAN_PacketHolder that will be populated with finalized packets.
- *
- * @retval UCAN_StatusTypeDef Returns UCAN_OK if the operation is successful, UCAN_INVALID_PARAM if input is NULL.
- *
- * @warning This function assumes packetHolder->count is already set and matches configPackets.
- *          No boundary or overflow checks are performed beyond basic NULL checks.
- */
+  * @brief  [INTERNAL] Converts high-level packet configuration into finalized UCAN_Packet format.
+  *
+  * @note   Mainly used in debug or simulation contexts where byte-level pointer mapping
+  *         is needed without actual CAN hardware interaction. This function traverses all
+  *         configured packets, calculates their DLC, and fills the bits[] array with
+  *         byte pointers pointing to the actual data.
+  *
+  *         Additionally, it sorts the finalized packets by their CAN IDs to ensure
+  *         consistent packet order during runtime operations.
+  *
+  * @param  configPackets Pointer to array of UCAN_PacketConfig structures.
+  * @param  packetHolder  Pointer to a UCAN_PacketHolder that will be populated with finalized packets.
+  *
+  * @retval UCAN_StatusTypeDef Returns UCAN_OK if the operation is successful, UCAN_INVALID_PARAM if input is NULL.
+  *
+  * @warning This function assumes packetHolder->count is already set and matches configPackets.
+  *          No boundary or overflow checks are performed beyond basic NULL checks.
+  */
 UCAN_StatusTypeDef uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, UCAN_PacketHolder* packetHolder)
 {
 	// Null pointer check to prevent invalid memory access
@@ -200,17 +206,24 @@ UCAN_StatusTypeDef uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, U
     return UCAN_OK;
 }
 
-
 /**
- * @brief  Validates the UCAN_NodeInfo structure for correctness.
- * @param  node Pointer to the UCAN_NodeInfo to validate.
- * @retval UCAN_OK if validation passes.
- * @retval UCAN_INVALID_PARAM if node or clientIdList pointer is NULL.
- * @retval UCAN_ERROR_DUPLICATE_ID if duplicate client IDs are detected.
- *
- * @note   Checks that the node role is valid via assert_param.
- *         Also scans clientIdList for duplicate IDs to prevent address conflicts on the CAN bus.
- */
+  * @brief [INTERNAL] Validates the UCAN_NodeInfo structure integrity and correctness.
+  *
+  * Performs sanity checks on the provided UCAN_NodeInfo pointer, including:
+  * - Null pointer validation to avoid invalid memory access.
+  * - Role verification via assert_param to ensure node role is within allowed range.
+  * - Duplicate client ID detection by scanning the client array to prevent
+  *   CAN bus address conflicts and communication errors.
+  *
+  * This validation helps catch configuration errors early and maintains
+  * network consistency within the UCAN protocol.
+  *
+  * @param node Pointer to the UCAN_NodeInfo instance to validate.
+  *
+  * @retval UCAN_OK              Validation succeeded, node info is consistent.
+  * @retval UCAN_INVALID_PARAM   Node pointer or clients list pointer is NULL.
+  * @retval UCAN_ERROR_DUPLICATE_ID Duplicate client IDs found in client list.
+  */
 UCAN_StatusTypeDef uCAN_Debug_CheckNodeInfo(UCAN_NodeInfo* node)
 {
 	// Null pointer check to prevent invalid memory access
@@ -238,6 +251,19 @@ UCAN_StatusTypeDef uCAN_Debug_CheckNodeInfo(UCAN_NodeInfo* node)
     return UCAN_OK;
 }
 
+/**
+  * @brief [INTERNAL] Finalizes the UCAN_NodeInfo client list by sorting clients by ID.
+  *
+  * This function validates the input pointer and sorts the array of UCAN_Client
+  * structures based on their client IDs using the standard qsort function.
+  * Sorting the client list improves lookup efficiency and guarantees a consistent
+  * order for operations like searching and handshake management.
+  *
+  * @param node Pointer to the UCAN_NodeInfo containing the client array to sort.
+  *
+  * @retval UCAN_OK               Sorting completed without errors.
+  * @retval UCAN_INVALID_PARAM    Null pointer provided as input.
+  */
 UCAN_StatusTypeDef uCAN_Debug_FinalizeNodeInfo(UCAN_NodeInfo* node)
 {
 	// Null pointer check to prevent invalid memory access
@@ -245,19 +271,20 @@ UCAN_StatusTypeDef uCAN_Debug_FinalizeNodeInfo(UCAN_NodeInfo* node)
         return UCAN_INVALID_PARAM;
     }
 
+    // Sort clients array by client ID for deterministic behavior
     qsort(node->clients, node->clientCount, sizeof(UCAN_Client), uCAN_Runtime_CompareClientId);
 
     return UCAN_OK;
 }
 
 /**
- * @brief  Validates that each item in the packet has a valid data type.
- * @param  pkt Pointer to the UCAN_PacketConfig to check.
- * @retval UCAN_OK if all data types are valid.
- * @retval UCAN_INVALID_PARAM if pkt is NULL.
- *
- * @note   Uses assert_param to ensure each item’s type is one of the allowed UCAN_DataType enums.
- */
+  * @brief  [INTERNAL] Validates that each item in the packet has a valid data type.
+  * @param  pkt Pointer to the UCAN_PacketConfig to check.
+  * @retval UCAN_OK if all data types are valid.
+  * @retval UCAN_INVALID_PARAM if pkt is NULL.
+  *
+  * @note   Uses assert_param to ensure each item’s type is one of the allowed UCAN_DataType enums.
+  */
 UCAN_StatusTypeDef uCAN_Debug_CheckIsDataType(UCAN_PacketConfig* pkt)
 {
 	// Check for null pointer to avoid dereferencing invalid memory
@@ -276,9 +303,8 @@ UCAN_StatusTypeDef uCAN_Debug_CheckIsDataType(UCAN_PacketConfig* pkt)
     return UCAN_OK;
 }
 
-
 /**
-  * @brief  Checks whether all packet IDs in the TX and RX holders are unique across both lists.
+  * @brief  [INTERNAL] Checks whether all packet IDs in the TX and RX holders are unique across both lists.
   * @note   This function iterates over both TX and RX packet holders and verifies that
   *         no packet ID is duplicated. If any duplicate is found, the corresponding status
   *         is returned and saved in the main UCAN handle.
@@ -332,9 +358,8 @@ UCAN_StatusTypeDef uCAN_Debug_CheckUniquePackets(UCAN_HandleTypeDef* ucan)
 	return UCAN_OK;
 }
 
-
 /**
-  * @brief  Checks if the given packet ID exists more than once across TX and RX packet holders.
+  * @brief  [INTERNAL] Checks if the given packet ID exists more than once across TX and RX packet holders.
   * @note   Counts how many times the specified ID appears in both TX and RX lists combined.
   *         If it occurs more than once, it's considered a duplicate.
   * @param  id: The packet ID to check.

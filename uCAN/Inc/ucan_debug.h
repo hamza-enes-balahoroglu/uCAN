@@ -2,22 +2,23 @@
   ******************************************************************************
   * @file    ucan_debug.h
   * @author  Hamza Enes Balahoroğlu
-  * @brief   This header provides internal debugging and validation functions
-  *          for the UCAN protocol stack. It includes helper utilities to check
-  *          packet configurations, node information, data types, and ensure
-  *          unique packet identifiers across TX and RX lists.
+  * @brief   [INTERNAL] Internal debug and validation utilities for the UCAN protocol stack.
   *
-  *          These functions are mainly intended for development-time checks and
-  *          debugging purposes. They help identify configuration issues early
-  *          before runtime, improving system robustness and consistency.
+  * This header declares a set of helper functions focused on configuration validation,
+  * consistency checks, and uniqueness enforcement of packet and node parameters within UCAN.
   *
-  * @note    All functions here are designed for internal use and are not meant
-  *          to be called during normal operation unless explicitly needed for
-  *          diagnostics or assertions.
+  * These utilities are intended primarily for development and debugging phases to catch
+  * misconfigurations, detect logical errors, and improve overall system robustness.
+  *
+  * Functions here are not meant for regular runtime use in production and should be
+  * invoked only during system bring-up, testing, or explicit diagnostics.
+  *
+  * @note    All declarations are marked [INTERNAL] indicating intended usage
+  *          is restricted to UCAN library internal modules and not exposed publicly.
   *
   *
-  *	  						 _____          _   _
-  *	  						/ ____|   /\   | \ | |
+  *                          _____          _   _
+  *                         / ____|   /\   | \ | |
   *	  				  _   _| |       /  \  |  \| |
   *	  				 | | | | |      / /\ \ | . ` |
   *	  				 | |_| | |____ / ____ \| |\  |
@@ -34,37 +35,62 @@
 #include "ucan_macros.h"
 
 /**
-  * @brief  Calculates the appropriate DLC based on item count and types.
+  * @brief [INTERNAL] Calculate total Data Length Code (DLC) for a packet configuration.
+  * @param pkt Pointer to the UCAN_PacketConfig to analyze.
+  * @retval uint8_t Total DLC (byte count) for the CAN frame.
   */
 uint8_t uCAN_Debug_Calculate_DLC(UCAN_PacketConfig* pkt);
 
 /**
-  * @brief  Validates a packet configuration list against a packet holder.
+  * @brief [INTERNAL] Validate packet configuration list for correctness.
+  * @param configList Pointer to array of UCAN_PacketConfig to check.
+  * @param packetHolder Pointer to UCAN_PacketHolder to populate metadata.
+  * @retval UCAN_StatusTypeDef UCAN_OK if valid, error code otherwise.
   */
 UCAN_StatusTypeDef uCAN_Debug_CheckPacketConfig(UCAN_PacketConfig* configList, UCAN_PacketHolder* packetHolder);
 
 /**
-  * @brief  Converts packet configuration into finalized packet format.
+  * @brief [INTERNAL] Finalize packet metadata and prepare for runtime use.
+  * @param configPackets Pointer to UCAN_PacketConfig array to finalize.
+  * @param packetHolder Pointer to UCAN_PacketHolder to store finalized data.
+  * @retval UCAN_StatusTypeDef UCAN_OK if successful, error otherwise.
   */
 UCAN_StatusTypeDef uCAN_Debug_FinalizePacket(UCAN_PacketConfig* configPackets, UCAN_PacketHolder* packetHolder);
 
 /**
-  * @brief  Validates node info and checks for duplicate client IDs.
+  * @brief [INTERNAL] Sort and finalize UCAN node information client list.
+  * @param node Pointer to UCAN_NodeInfo to finalize.
+  * @retval UCAN_StatusTypeDef UCAN_OK if success, error if invalid input.
   */
+UCAN_StatusTypeDef uCAN_Debug_FinalizeNodeInfo(UCAN_NodeInfo* node);
+
+/**
+ * @brief [INTERNAL] Validate UCAN node information for correctness and duplicates.
+ * @param node Pointer to UCAN_NodeInfo to check.
+ * @retval UCAN_StatusTypeDef UCAN_OK if valid, error code otherwise.
+ */
 UCAN_StatusTypeDef uCAN_Debug_CheckNodeInfo(UCAN_NodeInfo* node);
 
 /**
-  * @brief  Validates each item's data type in a packet config.
+  * @brief [INTERNAL] Verify that all packet items are valid data types.
+  * @param pkt Pointer to UCAN_PacketConfig to verify.
+  * @retval UCAN_StatusTypeDef UCAN_OK if all types valid, error otherwise.
   */
 UCAN_StatusTypeDef uCAN_Debug_CheckIsDataType(UCAN_PacketConfig* pkt);
 
 /**
-  * @brief  Checks all packets in TX and RX holders for unique IDs.
-  */
+ * @brief [INTERNAL] Ensure that packet IDs in TX and RX lists are unique.
+ * @param ucan Pointer to UCAN_HandleTypeDef to check.
+ * @retval UCAN_StatusTypeDef UCAN_OK if unique, error if duplicates found.
+ */
 UCAN_StatusTypeDef uCAN_Debug_CheckUniquePackets(UCAN_HandleTypeDef* ucan);
 
 /**
-  * @brief  Checks if a given packet ID is unique across TX and RX holders.
+  * @brief [INTERNAL] Check if a given packet ID is unique across TX and RX holders.
+  * @param id Packet ID to check.
+  * @param txHolder Pointer to UCAN_PacketHolder holding TX packets.
+  * @param rxHolder Pointer to UCAN_PacketHolder holding RX packets.
+  * @retval UCAN_StatusTypeDef UCAN_OK if unique, error if duplicate found.
   */
 UCAN_StatusTypeDef uCAN_Debug_CheckUniqueID(uint32_t id, UCAN_PacketHolder* txHolder, UCAN_PacketHolder* rxHolder);
 
