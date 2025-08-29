@@ -77,16 +77,19 @@ UCAN_Client clients[2] = {
 ## Installation
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/hamza-enes-balahoroglu/uCAN.git
 
-2. Copy the Inc/ and Src/ directories into your STM32 project.
+```bash
+git clone https://github.com/hamza-enes-balahoroglu/uCAN.git
+```
+
+2. Copy the uCAN/Inc/ and uCAN/Src/ directories into your STM32 project.
 
 3. Include the header:
 
-```
+```c
 #include "ucan.h"
 ```
+
 ---
 
 ## Usage Example
@@ -94,7 +97,7 @@ UCAN_Client clients[2] = {
 - Below is a minimal working example with TX and RX packet configuration, client setup, and handshake logic.
 Note the use of CAN RX0 interrupt to update internal RX states.
 
-```
+```c
 #include "ucan.h"
 
 CAN_HandleTypeDef hcan1;
@@ -207,6 +210,7 @@ void CAN1_RX0_IRQHandler(void)
     HAL_CAN_IRQHandler(&hcan1);
     uCAN_Update(&ucan1);
 }
+
 ```
 
 ---
