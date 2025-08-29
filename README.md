@@ -1,19 +1,78 @@
 # uCAN Library
 
-uCAN is a lightweight and modular CAN bus communication library designed for STM32-based systems.  
-It provides APIs to initialize, configure, transmit, receive, and manage multiple CAN clients with connection monitoring and handshake functionality.
-
----
+uCAN is a lightweight, modular, and robust CAN bus communication library for STM32-based systems.  
+It is built on top of STM32 HAL CAN drivers and provides an abstraction layer for managing multiple CAN clients with handshake and connection monitoring functionality.
 
 ## Features
 
-- Hardware-independent design (built on top of STM32 HAL CAN drivers).  
-- Support for multiple clients with unique IDs.  
-- Handshake mechanism to detect lost or unresponsive clients.  
-- Efficient **interrupt-driven RX handling** (no busy polling).  
-- Simple integration with STM32CubeIDE projects.  
+- **Hardware-independent design:** works with any STM32 device supported by HAL CAN drivers.  
+- **Multiple clients support:** allows multiple nodes with unique IDs to communicate on the same CAN bus.  
+- **Handshake mechanism:** monitors the connection status of clients to detect lost or unresponsive nodes.  
+- **Efficient RX handling:** uses interrupt-driven RX updates via `uCAN_Update()`; no busy polling needed.  
+- **TX packet management:** queued packet transmission with automatic node presence ping.  
+- **Flexible integration:** simple to add to STM32CubeIDE projects and main loop designs.
 
----
+## Key Concepts
+
+1. **UCAN_HandleTypeDef**  
+   - Main handle for the uCAN instance.  
+   - Holds CAN peripheral handle, TX/RX packet holders, node info, and client statuses.  
+   - Must be initialized with `uCAN_Init()` before starting communication.
+
+2. **Packet Management**  
+   - **TX packets:** define which application variables to transmit.  
+   - **RX packets:** define which CAN IDs to listen to and update corresponding variables.  
+   - Packets are configured using `UCAN_PacketConfig` and finalized in `uCAN_Start()`.  
+   - Duplicate packet IDs are detected during startup to avoid collisions.
+
+3. **Handshake Mechanism**  
+   - Tracks connection status for each client.  
+   - Each client has `sentTick` and `responseTick`.  
+   - Status can be:
+     - `UCAN_CONN_ACTIVE` – client responded on time.  
+     - `UCAN_CONN_TIMEOUT` – client did not respond in the expected timeframe.  
+     - `UCAN_CONN_LOST` – client has been disconnected.  
+   - Must call `uCAN_Handshake()` periodically (main loop or timer) to update client statuses.  
+   - Safe to call very frequently; internal logic prevents bus flooding.
+
+4. **Interrupt-driven RX Handling**  
+   - Incoming messages must be processed using `uCAN_Update()` inside the CAN RX0 interrupt handler:  
+
+     ```c
+     void CAN1_RX0_IRQHandler(void)
+     {
+         HAL_CAN_IRQHandler(&hcan1);
+         uCAN_Update(&ucan1);
+     }
+     ```
+
+   - This ensures RX packets are updated only when new data arrives, avoiding CPU waste.  
+   - Unknown packet IDs are treated as potential handshake messages.  
+
+5. **Initialization and Startup**  
+   - **`uCAN_Init()`** – validates the handle, assigns default CAN filter if none provided, prepares internal state.  
+   - **`uCAN_Start()`** – validates TX/RX packet lists, finalizes packet holders, checks for duplicates, configures CAN filters, starts the CAN peripheral, and activates RX FIFO0 interrupt.  
+   - Both functions are required in order; initialization alone is insufficient for communication.  
+
+6. **TX Packet Transmission**  
+   - `uCAN_SendAll()` iterates over all TX packets and sends them sequentially.  
+   - After transmitting, a ping is sent to announce node presence.  
+   - Assumes the CAN peripheral is started and ready.  
+
+## Example Variables and Packet Setup
+
+```c
+// Application variables
+uint16_t motorSpeed;    // TX
+uint8_t  ledStatus;     // TX
+uint16_t temperature;   // RX
+uint8_t  buttonPressed; // RX
+
+UCAN_Client clients[2] = {
+    {.id = 0x100U},
+    {.id = 0x200U}
+};
+
 
 ## Installation
 
