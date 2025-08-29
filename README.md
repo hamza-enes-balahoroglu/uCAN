@@ -25,8 +25,9 @@ It provides APIs to initialize, configure, transmit, receive, and manage multipl
 
 3. Include the header:
 
+```
 #include "ucan.h"
-
+```
 ---
 
 ## Usage Example
@@ -34,7 +35,7 @@ It provides APIs to initialize, configure, transmit, receive, and manage multipl
 - Below is a minimal working example with TX and RX packet configuration, client setup, and handshake logic.
 Note the use of CAN RX0 interrupt to update internal RX states.
 
-
+```
 #include "ucan.h"
 
 CAN_HandleTypeDef hcan1;
@@ -147,6 +148,7 @@ void CAN1_RX0_IRQHandler(void)
     HAL_CAN_IRQHandler(&hcan1);
     uCAN_Update(&ucan1);
 }
+```
 
 ---
 
