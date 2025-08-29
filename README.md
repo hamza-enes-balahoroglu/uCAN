@@ -38,13 +38,13 @@ It is built on top of STM32 HAL CAN drivers and provides an abstraction layer fo
 4. **Interrupt-driven RX Handling**  
    - Incoming messages must be processed using `uCAN_Update()` inside the CAN RX0 interrupt handler:  
 
-     ```c
-     void CAN1_RX0_IRQHandler(void)
-     {
-         HAL_CAN_IRQHandler(&hcan1);
-         uCAN_Update(&ucan1);
-     }
-     ```
+```c
+    void CAN1_RX0_IRQHandler(void)
+    {
+        HAL_CAN_IRQHandler(&hcan1);
+        uCAN_Update(&ucan1);
+    }
+```
 
    - This ensures RX packets are updated only when new data arrives, avoiding CPU waste.  
    - Unknown packet IDs are treated as potential handshake messages.  
@@ -62,34 +62,33 @@ It is built on top of STM32 HAL CAN drivers and provides an abstraction layer fo
 ## Example Variables and Packet Setup
 
 ```c
-// Application variables
-uint16_t motorSpeed;    // TX
-uint8_t  ledStatus;     // TX
-uint16_t temperature;   // RX
-uint8_t  buttonPressed; // RX
+    // Application variables
+    uint16_t motorSpeed;    // TX
+    uint8_t  ledStatus;     // TX
+    uint16_t temperature;   // RX
+    uint8_t  buttonPressed; // RX
 
-UCAN_Client clients[2] = {
-    {.id = 0x100U},
-    {.id = 0x200U}
-};
-
+    UCAN_Client clients[2] = {
+        {.id = 0x100U},
+        {.id = 0x200U}
+    };
+```
 
 ## Installation
 
 1. Clone the repository:
 
-```bash
-git clone https://github.com/hamza-enes-balahoroglu/uCAN.git
-```
+    ```bash
+    git clone https://github.com/hamza-enes-balahoroglu/uCAN.git
+    ```
 
 2. Copy the uCAN/Inc/ and uCAN/Src/ directories into your STM32 project.
 
 3. Include the header:
 
 ```c
-#include "ucan.h"
+    #include "ucan.h"
 ```
-
 ---
 
 ## Usage Example
