@@ -19,7 +19,7 @@ It provides APIs to initialize, configure, transmit, receive, and manage multipl
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/<your-username>/uCAN.git
+   git clone https://github.com/hamza-enes-balahoroglu/uCAN.git
 
 2. Copy the Inc/ and Src/ directories into your STM32 project.
 
@@ -164,3 +164,105 @@ void CAN1_RX0_IRQHandler(void)
 - The function internally checks the timestamp of the last handshake and decides if a new message should be sent.
 
 - If you do not call it, connection states will not be updated.
+
+---
+
+## API Reference
+
+### `UCAN_StatusTypeDef uCAN_Init(UCAN_HandleTypeDef* ucan)`
+Initializes the uCAN peripheral handle and prepares its internal state.
+
+**Parameters:**  
+- `ucan`: Pointer to the UCAN handle structure. Must not be `NULL` and must contain valid CAN handle and client list.
+
+**Returns:**  
+- `UCAN_OK` – Initialization successful.  
+- `UCAN_INVALID_PARAM` – Invalid input parameters (null pointers).  
+
+**Notes:**  
+- Does **not** start the CAN hardware.  
+- Assigns a default CAN filter if none is configured.  
+- Must be called before `uCAN_Start()`.  
+
+---
+
+### `UCAN_StatusTypeDef uCAN_Start(UCAN_HandleTypeDef* ucan, UCAN_Config* config)`
+Starts the uCAN protocol with the specified configuration, including TX/RX packet lists.
+
+**Parameters:**  
+- `ucan`: Pointer to an initialized UCAN handle.  
+- `config`: Pointer to a configuration structure containing TX/RX packet lists.
+
+**Returns:**  
+- `UCAN_OK` – Started successfully.  
+- `UCAN_INVALID_PARAM` – Handle not ready or invalid.  
+- `UCAN_ERROR_DUPLICATE_ID` – Duplicate packet IDs detected.  
+- `UCAN_ERROR_FILTER_CONFIG` – CAN filter configuration failed.  
+- `UCAN_ERROR_CAN_START` – CAN peripheral start failed.  
+- `UCAN_ERROR_CAN_NOTIFICATION` – Activation of CAN RX FIFO0 interrupt failed.
+
+**Notes:**  
+- Validates TX/RX packet configurations and finalizes internal packet holders.  
+- Checks for duplicate packet IDs across all holders.  
+- Configures CAN hardware filter and starts CAN peripheral.  
+- Activates RX FIFO0 message pending interrupt.  
+- Must be called **after** `uCAN_Init()` for proper operation.  
+
+---
+
+### `UCAN_StatusTypeDef uCAN_SendAll(UCAN_HandleTypeDef* ucan)`
+Sends all queued TX packets over the CAN bus and sends a node presence ping.
+
+**Parameters:**  
+- `ucan`: Pointer to an initialized UCAN handle.
+
+**Returns:**  
+- `UCAN_OK` – All packets and ping sent successfully.  
+- `UCAN_ERROR` – Failed to send one or more packets.
+
+**Notes:**  
+- Iterates through all packets in the TX holder and sends them sequentially.  
+- Sends a ping message after all packets to announce node presence.  
+- Assumes CAN peripheral is already started.  
+
+---
+
+### `UCAN_StatusTypeDef uCAN_Update(UCAN_HandleTypeDef* ucan)`
+Processes incoming CAN messages, updates RX packet data, and handles handshake messages if necessary.
+
+**Parameters:**  
+- `ucan`: Pointer to an initialized UCAN handle.
+
+**Returns:**  
+- `UCAN_OK` – Message processed successfully.  
+- `UCAN_ERROR` – CAN receive failure or unknown error.  
+- `UCAN_ERROR_UNKNOWN_ID` – Received unknown packet ID; may trigger handshake handling.  
+- Other handshake-related errors if handshake update fails.
+
+**Notes:**  
+- Must be called **inside the CAN RX0 interrupt handler** for immediate message processing.  
+- Reads one message from CAN RX FIFO0 at a time.  
+- Updates RX packet data if ID is known; otherwise, tries to handle it as a handshake message.  
+- Ensures that connection status is updated only when messages arrive.  
+
+---
+
+### `UCAN_StatusTypeDef uCAN_Handshake(UCAN_HandleTypeDef* ucan)`
+Evaluates handshake responses from all clients and updates connection statuses.
+
+**Parameters:**  
+- `ucan`: Pointer to an initialized UCAN handle.
+
+**Returns:**  
+- `UCAN_OK` – All clients responded within valid time.  
+- `UCAN_ERROR` – One or more clients failed handshake or timed out.
+
+**Notes:**  
+- Iterates through all clients and checks `responseTick` against `sentTick`.  
+- Updates `status` for each client:
+  - `UCAN_CONN_ACTIVE` – Client responded in time.  
+  - `UCAN_CONN_TIMEOUT` – Client response timed out.  
+  - `UCAN_CONN_LOST` – Client connection lost.  
+- Must be called **regularly**, either in the main loop or a periodic timer.  
+- Safe to call very frequently; internal logic ensures no bus flooding.  
+- If not called, client connection statuses will not update, and lost or timeout conditions may be missed.  
