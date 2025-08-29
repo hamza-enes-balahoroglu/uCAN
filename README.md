@@ -163,6 +163,4 @@ void CAN1_RX0_IRQHandler(void)
 
 - The function internally checks the timestamp of the last handshake and decides if a new message should be sent.
 
-- It is safe to call it thousands of times per second — it will not flood the bus.
-
 - If you do not call it, connection states will not be updated.
