@@ -24,6 +24,9 @@
   *          periodically from a main loop or timer context to keep connection
   *          statuses updated.
   *
+  * @see     uCAN GitHub repository: https://github.com/hamza-enes-balahoroglu/uCAN.git
+  * @link    https://github.com/hamza-enes-balahoroglu/uCAN.git uCAN GitHub Link @endlink
+  *
   *
   *                          _____          _   _
   *                         / ____|   /\   | \ | |

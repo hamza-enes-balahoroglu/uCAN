@@ -18,6 +18,9 @@
   * @note    This module forms the low-level backbone of the UCAN stack, enabling
   *          communication and synchronization between master and client nodes.
   *
+  * @see     uCAN GitHub repository: https://github.com/hamza-enes-balahoroglu/uCAN.git
+  * @link    https://github.com/hamza-enes-balahoroglu/uCAN.git uCAN GitHub Link @endlink
+  *
   *
   *                          _____          _   _
   *                         / ____|   /\   | \ | |

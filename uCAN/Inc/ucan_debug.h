@@ -16,6 +16,9 @@
   * @note    All declarations are marked [INTERNAL] indicating intended usage
   *          is restricted to UCAN library internal modules and not exposed publicly.
   *
+  * @see     uCAN GitHub repository: https://github.com/hamza-enes-balahoroglu/uCAN.git
+  * @link    https://github.com/hamza-enes-balahoroglu/uCAN.git uCAN GitHub Link @endlink
+  *
   *
   *                          _____          _   _
   *                         / ____|   /\   | \ | |

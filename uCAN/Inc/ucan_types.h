@@ -11,6 +11,9 @@
   *          embedded CAN applications requiring flexible data binding and
   *          node management.
   *
+  * @see     uCAN GitHub repository: https://github.com/hamza-enes-balahoroglu/uCAN.git
+  * @link    https://github.com/hamza-enes-balahoroglu/uCAN.git uCAN GitHub Link @endlink
+  *
   *
   *                          _____          _   _
   *                         / ____|   /\   | \ | |

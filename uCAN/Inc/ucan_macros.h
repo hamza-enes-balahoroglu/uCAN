@@ -29,6 +29,9 @@
   * @note    While primarily intended for internal use within the uCAN library,
   *          many of these macros are generic enough for use in other modules.
   *
+  * @see     uCAN GitHub repository: https://github.com/hamza-enes-balahoroglu/uCAN.git
+  * @link    https://github.com/hamza-enes-balahoroglu/uCAN.git uCAN GitHub Link @endlink
+  *
   *
   *                          _____          _   _
   *                         / ____|   /\   | \ | |
