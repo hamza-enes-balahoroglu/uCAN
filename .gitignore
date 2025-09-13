@@ -24,18 +24,22 @@
 *.x86_64
 *.hex
 *.launch
+*.ld
+*.ioc
 *.log
 *.tmp
 
 # Misc
 *.map
 *.m
-*.png
 
 # Eclipse CDT project files
 .cproject
 .project
+.mxproject
 .settings/
+/Core/
+/Drivers/
 /Debug/
 
 # Vagrant directory
