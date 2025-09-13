@@ -5,10 +5,10 @@ It is built on top of STM32 HAL CAN drivers and provides an abstraction layer fo
 
 ## Features
 
-- **Hardware-independent design:** works with any STM32 device supported by HAL CAN drivers.  
+- **Hardware design:** built on STM32 HAL CAN, tested on STM32F4 Discovery (STM32F403VGT6)
 - **Multiple clients support:** allows multiple nodes with unique IDs to communicate on the same CAN bus.  
 - **Handshake mechanism:** monitors the connection status of clients to detect lost or unresponsive nodes.  
-- **Efficient RX handling:** uses interrupt-driven RX updates via `uCAN_Update()`; no busy polling needed.  
+- **Efficient message handling:** incoming CAN messages are processed immediately and packet IDs are looked up fast (binary search), minimizing MCU cycles.
 - **TX packet management:** queued packet transmission with automatic node presence ping.  
 - **Flexible integration:** simple to add to STM32CubeIDE projects and main loop designs.
 
@@ -76,18 +76,52 @@ It is built on top of STM32 HAL CAN drivers and provides an abstraction layer fo
 
 ## Installation
 
+You can integrate uCAN into your STM32 project in two different ways:  
+- **Option 1 (Quick Start):** Copy & paste  
+- **Option 2 (Recommended):** Git submodule
+
+---
+
+**Tip:**
+If you are working in a team or want to keep up with updates easily, use the submodule method. If you just want a fast integration without Git knowledge, use the copy-paste method.
+
+---
+
+### Option 1 — Copy & Paste (Quick Start)
+
 1. Clone the repository:
-
-    ```bash
+```bash
     git clone https://github.com/hamza-enes-balahoroglu/uCAN.git
-    ```
-
+```
 2. Copy the uCAN/Inc/ and uCAN/Src/ directories into your STM32 project.
 
-3. Include the header:
-
+3. Include the header file in your source:
 ```c
     #include "ucan.h"
+```
+
+### Option 2 — Git Submodule (Recommended)
+
+You can include **uCAN** in your project as a submodule.  
+This makes it easier to keep your project up-to-date with the latest version of the library.
+
+1. Add uCAN as a submodule in your repository:
+```bash
+    git submodule add https://github.com/hamza-enes-balahoroglu/uCAN.git externals/uCAN
+    git add .gitmodules externals/uCAN
+    git commit -m "Add uCAN submodule"
+```
+
+2. Include the header file using the submodule path:
+```c
+#include "externals/uCAN/Inc/ucan.h"
+```
+
+3. To update uCAN to the latest version:
+```bash
+    git submodule update --remote --merge
+    git add externals/uCAN
+    git commit -m "Update uCAN submodule to latest"
 ```
 ---
 
@@ -217,8 +251,8 @@ void CAN1_RX0_IRQHandler(void)
 ## Important Notes
 
 ### RX Handling:
-- uCAN_Update() must be called inside the CAN1 RX0 interrupt handler.
-- This ensures RX packets are processed only when new data arrives, avoiding unnecessary CPU usage.
+- uCAN_Update() must be called inside the CAN1 RX0 interrupt handler (user must implement this handler).
+- This ensures incoming messages are processed only when new data arrives, avoiding unnecessary MCU cycles.
 
 ### Handshake:
 - uCAN_Handshake() must be called regularly (e.g., in the main loop or via a timer).
