@@ -12,7 +12,6 @@
   *          node management.
   *
   * @see     uCAN GitHub repository: https://github.com/hamza-enes-balahoroglu/uCAN.git
-  * @link    https://github.com/hamza-enes-balahoroglu/uCAN.git uCAN GitHub Link @endlink
   *
   *
   *                          _____          _   _

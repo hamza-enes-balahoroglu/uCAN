@@ -14,7 +14,6 @@
   * This header must be included only in UCAN source files that implement or use runtime features.
   *
   * @see     uCAN GitHub repository: https://github.com/hamza-enes-balahoroglu/uCAN.git
-  * @link    https://github.com/hamza-enes-balahoroglu/uCAN.git uCAN GitHub Link @endlink
   *
   *
   *                          _____          _   _
